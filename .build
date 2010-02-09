@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -ev
+
+8g goopt.go
+8g testit.go
+8l -o testit testit.8
+
+echo build successful!
