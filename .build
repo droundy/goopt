@@ -2,6 +2,10 @@
 
 set -ev
 
+# first check that the Makefile will actually run.
+make
+
+# now let's just compile things by hand.
 8g goopt.go
 8g testit.go
 8l -o testit testit.8
