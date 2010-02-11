@@ -114,12 +114,6 @@ func OptArg(names []string, def, help string, process func(string) os.Error) {
 	}})
 }
 
-type EnumFlag interface {
-	String() string
-	Next()
-	Reset()
-	IsOk() bool
-}
 func Alternatives(names, vs []string, help string) *string {
 	out := new(string)
 	*out = vs[0]
