@@ -80,6 +80,14 @@ func addOpt(o opt) {
 	opts[len(opts)-1] = o
 }
 
+func VisitAllNames(f func (string)) {
+	for _,o := range opts {
+		for _,n := range o.names {
+			f(n)
+		}
+	}
+}
+
 func addString(x string, xs *[]string) {
 	if len(*xs) == cap(*xs) { // reallocate
 		// Allocate double what's there, for future growth.
