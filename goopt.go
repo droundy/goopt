@@ -160,14 +160,14 @@ func Bool(name string, d bool, help string) *bool {
 	return b
 }
 
-func String(name string, d string, help string) *string {
+func String(names []string, d string, help string) *string {
 	s := new(string)
 	*s = d
 	f := func(ss string) os.Error {
 		*s = ss
 		return nil
 	}
-	ReqArg([]string{name}, d, help, f)
+	ReqArg(names, d, help, f)
 	return s
 }
 

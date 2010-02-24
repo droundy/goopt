@@ -11,8 +11,8 @@ var amVerbose = goopt.Bool("--verbose", false, "output verbosely")
 var amHappy = goopt.Flag([]string{"-h", "--happy"},
 	[]string{"-u", "--unhappy", "--sad"}, "be happy", "be unhappy")
 
-var foo = goopt.String("--name", "anonymous", "pick your name")
-var bar = goopt.String("-b", "BOO!", "pick your scary sound")
+var foo = goopt.String([]string{"--name"}, "anonymous", "pick your name")
+var bar = goopt.String([]string{"-b"}, "BOO!", "pick your scary sound")
 var speed = goopt.Alternatives([]string{"--speed","--velocity"},
 	                             []string{"slow","medium","fast"},
 	                             "set the speed")
