@@ -2,6 +2,8 @@
 
 set -ev
 
+make test
+
 ./testit | grep BOO
 ./testit | grep 'name is anonymous'
 ./testit | grep 'I am unhappy'

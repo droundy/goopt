@@ -173,6 +173,16 @@ func String(name string, d string, help string) *string {
 	return s
 }
 
+func Strings(names []string, d string, help string) []string {
+	s := make([]string,0,100)
+	f := func(ss string) os.Error {
+		addString(ss, &s)
+		return nil
+	}
+	ReqArg(names, d, help, f)
+	return s
+}
+
 func Flag(yes []string, no []string, helpyes, helpno string) *bool {
 	b := new(bool)
 	y := func() os.Error {
@@ -196,12 +206,17 @@ func failnoting(s string, e os.Error) {
 	}
 }
 
+var Args []string
+
 func Parse() {
 	addOpt(opt{[]string{"--help"}, "", "show usage message", false, "",
 		func(string) (e os.Error) { _,e = fmt.Println(Usage()); os.Exit(0); return }})
 	for i:=0; i<len(os.Args);i++ {
 		a := os.Args[i]
 		if a == "--" {
+			for _,aa := range os.Args[i:len(Args)] {
+				addString(aa,&Args)
+			}
 			break
 		}
 		if len(a) > 1 && a[0] == '-' && a[1] != '-' {
@@ -259,6 +274,9 @@ func Parse() {
 			}
 			if !foundone && len(a) > 2 && a[0] == '-' && a[1] == '-' {
 				failnoting("Bad flag:", os.NewError(a))
+			}
+			if !foundone {
+				addString(a,&Args)
 			}
 		}
 	}
