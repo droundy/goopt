@@ -35,13 +35,11 @@ pkgdir=$(subst $(space),\ ,$(GOROOT)/pkg/$(GOOS)_$(GOARCH))
 .got.gotgo:
 	gotgo "$<"
 
-# looks like we require gotgo/slice.got as installed package...
-gotgo/slice(string).go: $(pkgdir)/./gotgo/slice.gotgo
-	mkdir -p gotgo/
+# looks like we require pkg/gotgo/slice.got as installed package...
+pkg/gotgo/slice(string).go: $(pkgdir)/./gotgo/slice.gotgo
+	mkdir -p pkg/gotgo/
 	$< 'string' > "$@"
-goopt.$(O): goopt.go gotgo/slice(string).$(O)
-
-pkg/goopt.$(O): pkg/goopt.go
+pkg/goopt.$(O): pkg/goopt.go pkg/gotgo/slice(string).$(O)
 pkg/goopt.a: pkg/goopt.$(O)
 	gopack grc $@ $<
 $(pkgdir)/goopt.a: pkg/goopt.a

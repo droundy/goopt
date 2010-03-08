@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"bytes"
 	"tabwriter"
+	stringslice "./gotgo/slice(string)"
 )
 
 var opts = make([]opt, 0, 100)
@@ -64,7 +65,7 @@ func addOpt(o opt) {
 		case n[1] != '-':
 			panic("Invalid long flag, doesn't start with '--':" + n)
 		default:
-			addString(n, &newnames)
+			newnames = stringslice.Append(newnames, n)
 		}
 	}
 	o.names = newnames
@@ -86,19 +87,6 @@ func VisitAllNames(f func (string)) {
 			f(n)
 		}
 	}
-}
-
-func addString(x string, xs *[]string) {
-	if len(*xs) == cap(*xs) { // reallocate
-		// Allocate double what's there, for future growth.
-		newxs := make([]string, len(*xs), 1+len(*xs)*2)
-		for i, oo := range *xs {
-			newxs[i] = oo
-		}
-		*xs = newxs
-	}
-	*xs = (*xs)[0 : 1+len(*xs)]
-	(*xs)[len(*xs)-1] = x
 }
 
 func NoArg(names []string, help string, process func() os.Error) {
@@ -176,7 +164,7 @@ func String(name string, d string, help string) *string {
 func Strings(names []string, d string, help string) []string {
 	s := make([]string,0,100)
 	f := func(ss string) os.Error {
-		addString(ss, &s)
+		s = stringslice.Append(s, ss)
 		return nil
 	}
 	ReqArg(names, d, help, f)
@@ -215,7 +203,7 @@ func Parse() {
 		a := os.Args[i]
 		if a == "--" {
 			for _,aa := range os.Args[i:len(Args)] {
-				addString(aa,&Args)
+				Args = stringslice.Append(Args, aa)
 			}
 			break
 		}
@@ -276,7 +264,7 @@ func Parse() {
 				failnoting("Bad flag:", os.NewError(a))
 			}
 			if !foundone {
-				addString(a,&Args)
+				Args = stringslice.Append(Args, a)
 			}
 		}
 	}
