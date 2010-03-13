@@ -181,8 +181,12 @@ func Flag(yes []string, no []string, helpyes, helpno string) *bool {
 		*b = false
 		return nil
 	}
-	NoArg(yes, helpyes, y)
-	NoArg(no, helpno, n)
+	if len(yes) > 0 {
+		NoArg(yes, helpyes, y)
+	}
+	if len(no) > 0 {
+		NoArg(no, helpno, n)
+	}
 	return b
 }
 
