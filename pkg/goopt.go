@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"bytes"
 	"tabwriter"
+	stringslice "./gotgo/slice(string)"
 )
 
 var opts = make([]opt, 0, 100)
@@ -64,7 +65,7 @@ func addOpt(o opt) {
 		case n[1] != '-':
 			panic("Invalid long flag, doesn't start with '--':" + n)
 		default:
-			addString(n, &newnames)
+			newnames = stringslice.Append(newnames, n)
 		}
 	}
 	o.names = newnames
@@ -86,19 +87,6 @@ func VisitAllNames(f func (string)) {
 			f(n)
 		}
 	}
-}
-
-func addString(x string, xs *[]string) {
-	if len(*xs) == cap(*xs) { // reallocate
-		// Allocate double what's there, for future growth.
-		newxs := make([]string, len(*xs), 1+len(*xs)*2)
-		for i, oo := range *xs {
-			newxs[i] = oo
-		}
-		*xs = newxs
-	}
-	*xs = (*xs)[0 : 1+len(*xs)]
-	(*xs)[len(*xs)-1] = x
 }
 
 func NoArg(names []string, help string, process func() os.Error) {
@@ -162,14 +150,24 @@ func Bool(name string, d bool, help string) *bool {
 	return b
 }
 
-func String(name string, d string, help string) *string {
+func String(names []string, d string, help string) *string {
 	s := new(string)
 	*s = d
 	f := func(ss string) os.Error {
 		*s = ss
 		return nil
 	}
-	ReqArg([]string{name}, d, help, f)
+	ReqArg(names, d, help, f)
+	return s
+}
+
+func Strings(names []string, d string, help string) []string {
+	s := make([]string,0,100)
+	f := func(ss string) os.Error {
+		s = stringslice.Append(s, ss)
+		return nil
+	}
+	ReqArg(names, d, help, f)
 	return s
 }
 
@@ -196,12 +194,17 @@ func failnoting(s string, e os.Error) {
 	}
 }
 
+var Args []string
+
 func Parse() {
 	addOpt(opt{[]string{"--help"}, "", "show usage message", false, "",
 		func(string) (e os.Error) { _,e = fmt.Println(Usage()); os.Exit(0); return }})
 	for i:=0; i<len(os.Args);i++ {
 		a := os.Args[i]
 		if a == "--" {
+			for _,aa := range os.Args[i:len(Args)] {
+				Args = stringslice.Append(Args, aa)
+			}
 			break
 		}
 		if len(a) > 1 && a[0] == '-' && a[1] != '-' {
@@ -259,6 +262,9 @@ func Parse() {
 			}
 			if !foundone && len(a) > 2 && a[0] == '-' && a[1] == '-' {
 				failnoting("Bad flag:", os.NewError(a))
+			}
+			if !foundone {
+				Args = stringslice.Append(Args, a)
 			}
 		}
 	}
