@@ -18,7 +18,7 @@ var speed = goopt.Alternatives([]string{"--speed","--velocity"},
 	                             "set the speed")
 
 func main() {
-	goopt.Parse()
+	goopt.Parse(nil)
 	if *amVerbose {
 		fmt.Println("I am verbose.")
 	}

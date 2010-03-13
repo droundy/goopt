@@ -196,9 +196,32 @@ func failnoting(s string, e os.Error) {
 
 var Args []string
 
-func Parse() {
+func Parse(extraopts func() []string) {
+	// First we'll add the "--help" option.
 	addOpt(opt{[]string{"--help"}, "", "show usage message", false, "",
-		func(string) (e os.Error) { _,e = fmt.Println(Usage()); os.Exit(0); return }})
+		func(string) os.Error {
+			fmt.Println(Usage())
+			os.Exit(0)
+			return nil
+	}})
+	// Let's now tally all the long option names, so we can use this to
+	// find "unique" options.
+	longnames := []string{"--list-options"}
+	for _, o := range opts {
+		longnames = stringslice.Cat(longnames, o.names)
+	}
+	// Now let's check if --list-options was given, and if so, list all
+	// possible options.
+	if stringslice.Any(func(a string) bool {return match(a, longnames)=="--list-options"},
+		os.Args[1:]) {
+		if extraopts != nil {
+			for _, o := range extraopts() {
+				fmt.Println(o)
+			}
+		}
+		VisitAllNames(func (n string) { fmt.Println(n) })
+		os.Exit(0)
+	}
 	for i:=0; i<len(os.Args);i++ {
 		a := os.Args[i]
 		if a == "--" {
@@ -268,4 +291,23 @@ func Parse() {
 			}
 		}
 	}
+}
+
+func match(x string, allflags []string) string {
+	for _,f := range allflags {
+		if f == x {
+			return x
+		}
+	}
+	out := ""
+	for _,f := range allflags {
+		if len(f) >= len(x) && f[0:len(x)] == x {
+			if out == "" {
+				out = f
+			} else {
+				return ""
+			}
+		}
+	}
+	return out
 }
