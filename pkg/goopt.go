@@ -6,16 +6,27 @@ package goopt
 import (
 	"os"
 	"fmt"
+	"time"
 	"bytes"
+	"path"
 	"tabwriter"
+	"strings"
 	stringslice "./gotgo/slice(string)"
 )
 
 var opts = make([]opt, 0, 100)
 
 var Usage = func() string {
-  return fmt.Sprintf("Usage of %s:\n%s", os.Args[0], Help())
+	if Summary != "" {
+		return fmt.Sprintf("Usage of %s:\n\t",os.Args[0]) +
+			Summary + "\n" + Help()
+	}
+	return fmt.Sprintf("Usage of %s:\n%s",os.Args[0], Help())
 }
+var Summary = ""
+var Author = ""
+var Version = ""
+var Suite = ""
 
 var Help = func() string {
 	h0 := new(bytes.Buffer)
@@ -42,6 +53,44 @@ var Help = func() string {
 	}
 	h.Flush()
 	return h0.String()
+}
+
+var Synopsis = func() string {
+	h := new(bytes.Buffer)
+	for _, o := range opts {
+		fmt.Fprint(h," [")
+		switch {
+		case len(o.shortnames) == 0:
+			for _,n:= range o.names[0:len(o.names)-1] {
+				fmt.Fprintf(h, "\\-\\-%s|", n[2:])
+			}
+			fmt.Fprintf(h, "\\-\\-%s", o.names[len(o.names)-1][2:])
+			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
+		case len(o.names) == 0:
+			for _,c:= range o.shortnames[0:len(o.shortnames)-1] {
+				fmt.Fprintf(h, "\\-%c|", c)
+			}
+			fmt.Fprintf(h, "\\-%c", o.shortnames[len(o.shortnames)-1])
+			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
+		default:
+			for _,c:= range o.shortnames {
+				fmt.Fprintf(h, "\\-%c|", c)
+			}
+			for _,n:= range o.names[0:len(o.names)-1] {
+				fmt.Fprintf(h, "\\-\\-%s|", n[2:])
+			}
+			fmt.Fprintf(h, "\\-\\-%s", o.names[len(o.names)-1][2:])
+			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
+		}
+		fmt.Fprint(h, "]")
+	}
+	return h.String()
+}
+
+var Description = func() string {
+	return `To add a description to your program, define goopt.Description.
+
+If you want paragraphs, just use two newlines in a row, like latex.`
 }
 
 type opt struct {
@@ -206,7 +255,7 @@ func Parse(extraopts func() []string) {
 	}})
 	// Let's now tally all the long option names, so we can use this to
 	// find "unique" options.
-	longnames := []string{"--list-options"}
+	longnames := []string{"--list-options", "--create-manpage"}
 	for _, o := range opts {
 		longnames = stringslice.Cat(longnames, o.names)
 	}
@@ -220,6 +269,13 @@ func Parse(extraopts func() []string) {
 			}
 		}
 		VisitAllNames(func (n string) { fmt.Println(n) })
+		os.Exit(0)
+	}
+	// Now let's check if --create-manpage was given, and if so, create a
+	// man page.
+	if stringslice.Any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
+		os.Args[0:]) {
+		makeManpage()
 		os.Exit(0)
 	}
 	for i:=0; i<len(os.Args);i++ {
@@ -310,4 +366,66 @@ func match(x string, allflags []string) string {
 		}
 	}
 	return out
+}
+
+func makeManpage() {
+	_,progname :=  path.Split(os.Args[0])
+	version := Version
+	if Suite != "" { version = Suite + " " + version }
+	fmt.Printf(".TH \"%s\" 1 \"%s\" \"%s\" \"%s\"\n", progname,
+		time.LocalTime().Format("January 2, 2006"), version, Suite)
+	fmt.Println(".SH NAME")
+	if Summary != "" {
+		fmt.Println(progname,"\\-",Summary)
+	} else {
+		fmt.Println(progname)
+	}
+	fmt.Println(".SH SYNOPSIS")
+	fmt.Println(progname, Synopsis())
+	fmt.Println(".SH DESCRIPTION")
+	fmt.Println(formatParagraphs(Description()))
+	fmt.Println(".SH OPTIONS")
+	for _, o := range opts {
+		fmt.Println(".TP")
+		switch {
+		case len(o.shortnames) == 0:
+			for _,n:= range o.names[0:len(o.names)-1] {
+				fmt.Printf("\\-\\-%s,", n[2:])
+			}
+			fmt.Printf("\\-\\-%s", o.names[len(o.names)-1][2:])
+			if o.allowsArg != "" { fmt.Printf( " %s", o.allowsArg) }
+		case len(o.names) == 0:
+			for _,c:= range o.shortnames[0:len(o.shortnames)-1] {
+				fmt.Printf( "\\-%c,", c)
+			}
+			fmt.Printf("\\-%c", o.shortnames[len(o.shortnames)-1])
+			if o.allowsArg != "" { fmt.Printf( " %s", o.allowsArg) }
+		default:
+			for _,c:= range o.shortnames {
+				fmt.Printf("\\-%c,", c)
+			}
+			for _,n:= range o.names[0:len(o.names)-1] {
+				fmt.Printf("\\-\\-%s,", n[2:])
+			}
+			fmt.Printf( "\\-\\-%s", o.names[len(o.names)-1][2:])
+			if o.allowsArg != "" { fmt.Printf( " %s", o.allowsArg) }
+		}
+		fmt.Printf("\n%s\n", o.help)
+	}
+	if Author != "" {
+		fmt.Printf(".SH AUTHOR\n%s\n", Author)
+	}
+}
+
+func formatParagraphs(x string) string {
+	h := new(bytes.Buffer)
+	lines := strings.Split(x, "\n", 0)
+	for _,l := range lines {
+		if l == "" {
+			fmt.Fprintln(h, ".PP")
+		} else {
+			fmt.Fprintln(h, l)
+		}
+	}
+	return h.String()
 }
