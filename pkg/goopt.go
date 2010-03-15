@@ -27,6 +27,14 @@ var Summary = ""
 var Author = ""
 var Version = ""
 var Suite = ""
+var Vars = make(map[string]string)
+
+func Expand(x string) string {
+	for k,v := range Vars {
+		x = strings.Join(strings.Split(x, k, 0), v)
+	}
+	return x
+}
 
 var Help = func() string {
 	h0 := new(bytes.Buffer)
@@ -49,7 +57,7 @@ var Help = func() string {
 			fmt.Fprint(h, o.names[len(o.names)-1])
 			if o.allowsArg != "" { fmt.Fprintf(h, "=%s", o.allowsArg) }
 		}
-		fmt.Fprintf(h, "\t%v\n", o.help)
+		fmt.Fprintf(h, "\t%v\n", Expand(o.help))
 	}
 	h.Flush()
 	return h0.String()
@@ -410,7 +418,7 @@ func makeManpage() {
 			fmt.Printf( "\\-\\-%s", o.names[len(o.names)-1][2:])
 			if o.allowsArg != "" { fmt.Printf( " %s", o.allowsArg) }
 		}
-		fmt.Printf("\n%s\n", o.help)
+		fmt.Printf("\n%s\n", Expand(o.help))
 	}
 	if Author != "" {
 		fmt.Printf(".SH AUTHOR\n%s\n", Author)
