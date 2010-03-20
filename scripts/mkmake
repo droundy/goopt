@@ -1,3 +1,0 @@
-set -ev
-cp -f scripts/make.header Makefile
-gotmake >> Makefile

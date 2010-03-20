@@ -11,7 +11,6 @@ import (
 	"path"
 	"tabwriter"
 	"strings"
-	stringslice "./gotgo/slice(string)"
 )
 
 var opts = make([]opt, 0, 100)
@@ -114,7 +113,7 @@ func addOpt(o opt) {
 		case n[1] != '-':
 			panic("Invalid long flag, doesn't start with '--':" + n)
 		default:
-			newnames = stringslice.Append(newnames, n)
+			newnames = Append(newnames, n)
 		}
 	}
 	o.names = newnames
@@ -213,7 +212,7 @@ func String(names []string, d string, help string) *string {
 func Strings(names []string, d string, help string) []string {
 	s := make([]string,0,100)
 	f := func(ss string) os.Error {
-		s = stringslice.Append(s, ss)
+		s = Append(s, ss)
 		return nil
 	}
 	ReqArg(names, d, help, f)
@@ -257,11 +256,11 @@ func Parse(extraopts func() []string) {
 	// find "unique" options.
 	longnames := []string{"--list-options", "--create-manpage"}
 	for _, o := range opts {
-		longnames = stringslice.Cat(longnames, o.names)
+		longnames = Cat(longnames, o.names)
 	}
 	// Now let's check if --list-options was given, and if so, list all
 	// possible options.
-	if stringslice.Any(func(a string) bool {return match(a, longnames)=="--list-options"},
+	if Any(func(a string) bool {return match(a, longnames)=="--list-options"},
 		os.Args[1:]) {
 		if extraopts != nil {
 			for _, o := range extraopts() {
@@ -273,7 +272,7 @@ func Parse(extraopts func() []string) {
 	}
 	// Now let's check if --create-manpage was given, and if so, create a
 	// man page.
-	if stringslice.Any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
+	if Any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
 		os.Args[0:]) {
 		makeManpage()
 		os.Exit(0)
@@ -282,7 +281,7 @@ func Parse(extraopts func() []string) {
 		a := os.Args[i]
 		if a == "--" {
 			for _,aa := range os.Args[i:len(Args)] {
-				Args = stringslice.Append(Args, aa)
+				Args = Append(Args, aa)
 			}
 			break
 		}
@@ -343,7 +342,7 @@ func Parse(extraopts func() []string) {
 				failnoting("Bad flag:", os.NewError(a))
 			}
 			if !foundone {
-				Args = stringslice.Append(Args, a)
+				Args = Append(Args, a)
 			}
 		}
 	}
