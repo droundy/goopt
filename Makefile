@@ -14,7 +14,7 @@ bindir=$(subst $(space),\ ,$(GOBIN))
 pkgdir=$(subst $(space),\ ,$(GOROOT)/pkg/$(GOOS)_$(GOARCH))
 srcpkgdir=$(subst $(space),\ ,$(GOROOT)/src/pkg)
 
-.PHONY: test install
+.PHONY: test install clean
 .SUFFIXES: .$(O) .go
 
 .go.$(O):
@@ -23,6 +23,8 @@ srcpkgdir=$(subst $(space),\ ,$(GOROOT)/src/pkg)
 all: pkg/goopt.a
 test: install testit
 install: $(pkgdir)/goopt.a
+clean:
+	rm -f *.$(O) */*.$(O) pkg/*.a testit
 
 ifneq ($(strip $(shell which gotgo)),)
 pkg/slice.go: $(srcpkgdir)/gotgo/slice.got
