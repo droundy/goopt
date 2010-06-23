@@ -4,7 +4,7 @@ package main
 
 import (
 	"fmt"
-	"goopt"
+	goopt "github.com/droundy/goopt.git"
 )
 
 var amVerbose = goopt.Bool("--verbose", false, "output verbosely")
