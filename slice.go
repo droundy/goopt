@@ -1,4 +1,4 @@
-package slice龍string龍string
+package goopt
 
 
 
@@ -69,21 +69,25 @@ func Repeat(val string, n int) []string {
 }
 
 // Cat concatenates two slices, expanding if needed.
-func Cat(slice []string, more []string) []string {
-	length1, length2 := len(slice), len(more)
-	if cap(slice) <= length1 + length2 {
-		// we need to expand
-		newsl := make([]string, length1, 2*(length1+length2))
-		for i,v := range slice {
-			newsl[i] = v
+func Cat(slices ...[]string) []string {
+	return Cats(slices)
+}
+
+// Cats concatenates several slices, expanding if needed.
+func Cats(slices [][]string) []string {
+	lentot := 0
+	for _,sl := range slices {
+		lentot += len(sl)
+	}
+	out := make([]string, lentot)
+	i := 0
+	for _,sl := range slices {
+		for _,v := range sl {
+			out[i] = v
+			i++
 		}
-		slice = newsl
 	}
-	slice = slice[0:length1+length2]
-	for i,v := range more {
-		slice[length1+i] = v
-	}
-	return slice
+	return out
 }
 
 func Reverse(slice []string) (out []string) {
@@ -101,9 +105,8 @@ func Any(f func(string) bool, slice []string) bool {
 	}
 	return false
 }
+
 // Here we will test that the types parameters are ok...
-
-
 func testTypes(arg0 string, arg1 string) {
     f := func(interface{}, interface{}) { } // this func does nothing...
     f(arg0, arg1)
