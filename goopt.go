@@ -15,6 +15,7 @@ import (
 
 var opts = make([]opt, 0, 100)
 
+// Redefine this function to change the way usage is printed
 var Usage = func() string {
 	if Summary != "" {
 		return fmt.Sprintf("Usage of %s:\n\t",os.Args[0]) +
@@ -22,12 +23,24 @@ var Usage = func() string {
 	}
 	return fmt.Sprintf("Usage of %s:\n%s",os.Args[0], Help())
 }
+
+// Redefine this to change the summary of your program (used in the default Usage() and man page)
 var Summary = ""
+
+// Redefine this to change the author of your program (used in the default man page)
 var Author = ""
+
+// Redefine this to change the displayed version of your program (used in the default man page)
 var Version = ""
+
+// Redefine this to change the suite of your program (e.g. the application name) (used in the default manpage())
 var Suite = ""
+
+// Variables for expansion using Expand(), which is automatically called on help text for flags
 var Vars = make(map[string]string)
 
+// Expand all variables in Vars within the given string.  This does not assume any prefix or suffix that sets
+// off a variable from the rest of the text, so a var of A set to HI expanded into HAPPY will become HHIPPY.
 func Expand(x string) string {
 	for k,v := range Vars {
 		x = strings.Join(strings.Split(x, k, -1), v)
@@ -35,6 +48,7 @@ func Expand(x string) string {
 	return x
 }
 
+// Override the way help is displayed (not recommended)
 var Help = func() string {
 	h0 := new(bytes.Buffer)
 	h := tabwriter.NewWriter(h0,0,8,2,' ',0)
@@ -62,6 +76,7 @@ var Help = func() string {
 	return h0.String()
 }
 
+// Override the shortened help for your program (not recommended)
 var Synopsis = func() string {
 	h := new(bytes.Buffer)
 	for _, o := range opts {
@@ -94,6 +109,8 @@ var Synopsis = func() string {
 	return h.String()
 }
 
+// Set the description used in the man page for your program.  If you want paragraphs,
+// use two newlines in a row (e.g. LaTeX)
 var Description = func() string {
 	return `To add a description to your program, define goopt.Description.
 
@@ -137,6 +154,7 @@ func addOpt(o opt) {
 	opts[len(opts)-1] = o
 }
 
+// Execute the given closure on the name of all known arguments
 func VisitAllNames(f func (string)) {
 	for _,o := range opts {
 		for _,n := range o.names {
@@ -145,6 +163,11 @@ func VisitAllNames(f func (string)) {
 	}
 }
 
+// Add a new flag that does not allow arguments
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+//   process func() os.Error   The function to call when this flag is processed with no argument
 func NoArg(names []string, help string, process func() os.Error) {
 	addOpt(opt{names, "", help, false, "", func(s string) os.Error {
 			if s != "" {
@@ -153,10 +176,22 @@ func NoArg(names []string, help string, process func() os.Error) {
 			return process() }})
 }
 
+// Add a new flag that may optionally have an argument
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   argname string            The name of the argument in help, e.g. the "value" part of "--flag=value"
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+//   process func() os.Error   The function to call when this flag is processed
 func ReqArg(names []string, argname, help string, process func(string) os.Error) {
 	addOpt(opt{names, "", help, true, argname, process})
 }
 
+// Add a new flag that may optionally have an argument
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   def     string            The default of the argument in help, e.g. the "value" part of "--flag=value"
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+//   process func() os.Error   The function to call when this flag is processed with an argument
 func OptArg(names []string, def, help string, process func(string) os.Error) {
 	addOpt(opt{names, "", help, false, def, func(s string) os.Error {
 			if s == "" {
@@ -166,6 +201,13 @@ func OptArg(names []string, def, help string, process func(string) os.Error) {
 	}})
 }
 
+// Create a required-argument flag that only accepts the given set of values
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   vals  []string            These are the allowable values for the argument
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+// Returns:
+//   *string                   This points to a string whose value is updated as this flag is changed
 func Alternatives(names, vs []string, help string) *string {
 	out := new(string)
 	*out = vs[0]
@@ -187,6 +229,13 @@ func Alternatives(names, vs []string, help string) *string {
 	return out
 }
 
+// Create an optional-argument flag that is true with no argument and allows ([Tt]rue|yes) or ([Ffalse]|no)
+// Parameters:
+//   name  []string            This is the name that is accepted on the command-line for this flag, e.g. -v or --verbose
+//   def     bool              This is the default value for this boolean flag
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+// Returns:
+//   *bool                     This points to a bool whose value is updated as this flag is changed
 func Bool(name string, d bool, help string) *bool {
 	b := new(bool)
 	*b = d
@@ -206,6 +255,13 @@ func Bool(name string, d bool, help string) *bool {
 	return b
 }
 
+// Create a required-argument flag that accepts string values
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   def     string            Default value for the string
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+// Returns:
+//   *string                   This points to a string whose value is updated as this flag is changed
 func String(names []string, d string, help string) *string {
 	s := new(string)
 	*s = d
@@ -217,6 +273,13 @@ func String(names []string, d string, help string) *string {
 	return s
 }
 
+// Create a required-argument flag that accepts string values but allows more than one to be specified
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   def     string            Default value for the string
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+// Returns:
+//   []string                  This points to a string slice whose value is appended as this flag is changed
 func Strings(names []string, d string, help string) []string {
 	s := make([]string,0,100)
 	f := func(ss string) os.Error {
@@ -227,6 +290,14 @@ func Strings(names []string, d string, help string) []string {
 	return s
 }
 
+// Create a no argument flag that is set by either passing one of the "NO" flags or one of the "YES" flags
+// Parameters:
+//   yes   []string            These flags set the boolean value to true (e.g. -i --install)
+//   no    []string            These flags set the boolean value to false (e.g. -I --no-install)
+//   helpyes string            The help text (automatically Expand()ed) to display for the "yes" flags
+//   helpno  string            The help text (automatically Expand()ed) to display for the "no" flags
+// Returns:
+//   *bool                     This points to a bool whose value is updated as this flag is changed
 func Flag(yes []string, no []string, helpyes, helpno string) *bool {
 	b := new(bool)
 	y := func() os.Error {
@@ -254,8 +325,16 @@ func failnoting(s string, e os.Error) {
 	}
 }
 
+// This is the list of non-flag arguments after processing
 var Args []string
 
+// This parses the command-line arguments.
+// Special flags are:
+//   --help               Display the generated help message (calls Help())
+//   --create-manpage     Display a manpage generated by the goopt library (uses Author, Suite, etc)
+//   --list-options       List all known flags
+// Arguments:
+//   extraopts func() []string     This function is called by --list-options and returns extra options to display
 func Parse(extraopts func() []string) {
 	// First we'll add the "--help" option.
 	addOpt(opt{[]string{"--help"}, "", "show usage message", false, "",
