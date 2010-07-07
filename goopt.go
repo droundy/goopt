@@ -145,7 +145,7 @@ func addOpt(o opt) {
 		case n[1] != '-':
 			panic("Invalid long flag, doesn't start with '--':" + n)
 		default:
-			newnames = Append(newnames, n)
+			newnames = append(newnames, n)
 		}
 	}
 	o.names = newnames
@@ -290,7 +290,7 @@ func String(names []string, d string, help string) *string {
 func Strings(names []string, d string, help string) []string {
 	s := make([]string,0,100)
 	f := func(ss string) os.Error {
-		s = Append(s, ss)
+		s = append(s, ss)
 		return nil
 	}
 	ReqArg(names, d, help, f)
@@ -354,11 +354,11 @@ func Parse(extraopts func() []string) {
 	// find "unique" options.
 	longnames := []string{"--list-options", "--create-manpage"}
 	for _, o := range opts {
-		longnames = Cat(longnames, o.names)
+		longnames = cat(longnames, o.names)
 	}
 	// Now let's check if --list-options was given, and if so, list all
 	// possible options.
-	if Any(func(a string) bool {return match(a, longnames)=="--list-options"},
+	if any(func(a string) bool {return match(a, longnames)=="--list-options"},
 		os.Args[1:]) {
 		if extraopts != nil {
 			for _, o := range extraopts() {
@@ -370,7 +370,7 @@ func Parse(extraopts func() []string) {
 	}
 	// Now let's check if --create-manpage was given, and if so, create a
 	// man page.
-	if Any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
+	if any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
 		os.Args[0:]) {
 		makeManpage()
 		os.Exit(0)
@@ -378,7 +378,7 @@ func Parse(extraopts func() []string) {
 	for i, a := range os.Args {
 		if a == "--" {
 			for _,aa := range os.Args[i:len(Args)] {
-				Args = Append(Args, aa)
+				Args = append(Args, aa)
 			}
 			break
 		}
@@ -446,7 +446,7 @@ func Parse(extraopts func() []string) {
 				failnoting("Bad flag:", os.NewError(a))
 			}
 			if !foundone {
-				Args = Append(Args, a)
+				Args = append(Args, a)
 			}
 		}
 	}
