@@ -229,32 +229,6 @@ func Alternatives(names, vs []string, help string) *string {
 	return out
 }
 
-// Create an optional-argument flag that is true with no argument and allows ([Tt]rue|yes) or ([Ffalse]|no)
-// Parameters:
-//   name  []string            This is the name that is accepted on the command-line for this flag, e.g. -v or --verbose
-//   def     bool              This is the default value for this boolean flag
-//   help    string            The help text (automatically Expand()ed) to display for this flag
-// Returns:
-//   *bool                     This points to a bool whose value is updated as this flag is changed
-func Bool(name string, d bool, help string) *bool {
-	b := new(bool)
-	*b = d
-	f := func(s string) os.Error {
-		//fmt.Println("Got", name, "of", s)
-		switch s {
-		case "true", "True", "yes", "":
-			*b = true
-		case "false", "False", "no":
-			*b = false
-		default:
-			return os.NewError("bad boolean flag: " + s)
-		}
-		return nil
-	}
-	addOpt(opt{[]string{name}, "", help, false, fmt.Sprintf("%v",d), f})
-	return b
-}
-
 // Create a required-argument flag that accepts string values
 // Parameters:
 //   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
@@ -294,11 +268,12 @@ func Strings(names []string, d string, help string) []string {
 // Parameters:
 //   yes   []string            These flags set the boolean value to true (e.g. -i --install)
 //   no    []string            These flags set the boolean value to false (e.g. -I --no-install)
+//   def     bool              The default state of the flag if unmodified by either yes or no flags
 //   helpyes string            The help text (automatically Expand()ed) to display for the "yes" flags
 //   helpno  string            The help text (automatically Expand()ed) to display for the "no" flags
 // Returns:
 //   *bool                     This points to a bool whose value is updated as this flag is changed
-func Flag(yes []string, no []string, helpyes, helpno string) *bool {
+func Flag(yes []string, no []string, def bool, helpyes, helpno string) *bool {
 	b := new(bool)
 	y := func() os.Error {
 		*b = true
@@ -314,6 +289,7 @@ func Flag(yes []string, no []string, helpyes, helpno string) *bool {
 	if len(no) > 0 {
 		NoArg(no, helpno, n)
 	}
+	*b = default
 	return b
 }
 
