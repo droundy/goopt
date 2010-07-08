@@ -45,23 +45,6 @@ func Filter(f func(string) bool, slice []string) []string {
 	return out
 }
 
-// Append appends an element to a slice, in-place if possible, and
-// expanding if needed.
-func Append(slice []string, val string) []string {
-	length := len(slice)
-	if cap(slice) == length {
-		// we need to expand
-		newsl := make([]string, length, 2*(length+1))
-		for i,v := range slice {
-			newsl[i] = v
-		}
-		slice = newsl
-	}
-	slice = slice[0:length+1]
-	slice[length] = val
-	return slice
-}
-
 func Repeat(val string, n int) []string {
 	out := make([]string, n)
 	for i,_ := range out { out[i] = val }

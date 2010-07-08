@@ -127,7 +127,7 @@ type opt struct {
 }
 
 func addOpt(o opt) {
-	newnames := make([]string,0,100)
+	newnames := new(vector.StringVector)
 	for _, n := range o.names {
 		switch {
 		case len(n) < 2:
@@ -139,10 +139,10 @@ func addOpt(o opt) {
 		case n[1] != '-':
 			panic("Invalid long flag, doesn't start with '--':" + n)
 		default:
-			newnames = Append(newnames, n)
+			newnames.Push(n)
 		}
 	}
-	o.names = newnames
+	o.names = newnames.Data()
 	if len(opts) == cap(opts) { // reallocate
 		// Allocate double what's needed, for future growth.
 		newOpts := make([]opt, len(opts), len(opts)*2)
@@ -303,7 +303,7 @@ func failnoting(s string, e os.Error) {
 }
 
 // This is the list of non-flag arguments after processing
-var Args []string
+var Args = new(vector.StringVector)
 
 // This parses the command-line arguments.
 // Special flags are:
@@ -348,8 +348,8 @@ func Parse(extraopts func() []string) {
 	for i:=0; i<len(os.Args);i++ {
 		a := os.Args[i]
 		if a == "--" {
-			for _,aa := range os.Args[i:len(Args)] {
-				Args = Append(Args, aa)
+			for _,aa := range os.Args[i:] {
+				Args.Push(aa)
 			}
 			break
 		}
@@ -410,7 +410,7 @@ func Parse(extraopts func() []string) {
 				failnoting("Bad flag:", os.NewError(a))
 			}
 			if !foundone {
-				Args = Append(Args, a)
+				Args.Push(a)
 			}
 		}
 	}
