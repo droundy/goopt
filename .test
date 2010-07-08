@@ -21,6 +21,8 @@ example/example -h | grep 'am happy'
 example/example -u | grep 'am unhappy'
 example/example -b boo | grep boo
 example/example | grep 'very slow'
+example/example --speed fast | grep 'very fast'
+example/example --speed=fast
 example/example --speed=fast | grep 'very fast'
 example/example --velocity=medium | grep 'very medium'
 example/example --velocity=mediu && exit 1

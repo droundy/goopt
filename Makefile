@@ -13,6 +13,5 @@ include $(GOROOT)/src/Make.pkg
 
 # ifneq ($(strip $(shell which gotgo)),)
 # pkg/slice.go: $(srcpkgdir)/gotgo/slice.got
-
 # 	gotgo --package-name goopt -o "$@" "$<" string
 # endif

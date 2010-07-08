@@ -25,23 +25,30 @@ var Usage = func() string {
 	return fmt.Sprintf("Usage of %s:\n%s",os.Args[0], Help())
 }
 
-// Redefine this to change the summary of your program (used in the default Usage() and man page)
+// Redefine this to change the summary of your program (used in the
+// default Usage() and man page)
 var Summary = ""
 
-// Redefine this to change the author of your program (used in the default man page)
+// Redefine this to change the author of your program (used in the
+// default man page)
 var Author = ""
 
-// Redefine this to change the displayed version of your program (used in the default man page)
+// Redefine this to change the displayed version of your program (used
+// in the default man page)
 var Version = ""
 
-// Redefine this to change the suite of your program (e.g. the application name) (used in the default manpage())
+// Redefine this to change the suite of your program (e.g. the
+// application name) (used in the default manpage())
 var Suite = ""
 
-// Variables for expansion using Expand(), which is automatically called on help text for flags
+// Variables for expansion using Expand(), which is automatically
+// called on help text for flags
 var Vars = make(map[string]string)
 
-// Expand all variables in Vars within the given string.  This does not assume any prefix or suffix that sets
-// off a variable from the rest of the text, so a var of A set to HI expanded into HAPPY will become HHIPPY.
+// Expand all variables in Vars within the given string.  This does
+// not assume any prefix or suffix that sets off a variable from the
+// rest of the text, so a var of A set to HI expanded into HAPPY will
+// become HHIPPY.
 func Expand(x string) string {
 	for k,v := range Vars {
 		x = strings.Join(strings.Split(x, k, -1), v)
@@ -110,8 +117,8 @@ var Synopsis = func() string {
 	return h.String()
 }
 
-// Set the description used in the man page for your program.  If you want paragraphs,
-// use two newlines in a row (e.g. LaTeX)
+// Set the description used in the man page for your program.  If you
+// want paragraphs, use two newlines in a row (e.g. LaTeX)
 var Description = func() string {
 	return `To add a description to your program, define goopt.Description.
 
@@ -177,22 +184,22 @@ func NoArg(names []string, help string, process func() os.Error) {
 			return process() }})
 }
 
-// Add a new flag that may optionally have an argument
+// Add a new flag that requires an argument
 // Parameters:
-//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
-//   argname string            The name of the argument in help, e.g. the "value" part of "--flag=value"
-//   help    string            The help text (automatically Expand()ed) to display for this flag
-//   process func() os.Error   The function to call when this flag is processed
+//   names []string                  These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   argname string                  The name of the argument in help, e.g. the "value" part of "--flag=value"
+//   help    string                  The help text (automatically Expand()ed) to display for this flag
+//   process func(string) os.Error   The function to call when this flag is processed
 func ReqArg(names []string, argname, help string, process func(string) os.Error) {
 	addOpt(opt{names, "", help, true, argname, process})
 }
 
 // Add a new flag that may optionally have an argument
 // Parameters:
-//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
-//   def     string            The default of the argument in help, e.g. the "value" part of "--flag=value"
-//   help    string            The help text (automatically Expand()ed) to display for this flag
-//   process func() os.Error   The function to call when this flag is processed with an argument
+//   names []string                 These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   def     string                 The default of the argument in help, e.g. the "value" part of "--flag=value"
+//   help    string                 The help text (automatically Expand()ed) to display for this flag
+//   process func(string) os.Error  The function to call when this flag is processed with an argument
 func OptArg(names []string, def, help string, process func(string) os.Error) {
 	addOpt(opt{names, "", help, false, def, func(s string) os.Error {
 			if s == "" {
@@ -324,11 +331,11 @@ func Parse(extraopts func() []string) {
 	// find "unique" options.
 	longnames := []string{"--list-options", "--create-manpage"}
 	for _, o := range opts {
-		longnames = Cat(longnames, o.names)
+		longnames = cat(longnames, o.names)
 	}
 	// Now let's check if --list-options was given, and if so, list all
 	// possible options.
-	if Any(func(a string) bool {return match(a, longnames)=="--list-options"},
+	if any(func(a string) bool {return match(a, longnames)=="--list-options"},
 		os.Args[1:]) {
 		if extraopts != nil {
 			for _, o := range extraopts() {
@@ -340,13 +347,12 @@ func Parse(extraopts func() []string) {
 	}
 	// Now let's check if --create-manpage was given, and if so, create a
 	// man page.
-	if Any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
+	if any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
 		os.Args[0:]) {
 		makeManpage()
 		os.Exit(0)
 	}
-	for i:=0; i<len(os.Args);i++ {
-		a := os.Args[i]
+	for i, a := range os.Args {
 		if a == "--" {
 			for _,aa := range os.Args[i:] {
 				Args.Push(aa)
@@ -381,11 +387,23 @@ func Parse(extraopts func() []string) {
 				}
 			}
 		} else {
+			// Looking for a long flag.  Any unique prefix is accepted!
+			aflag := match(os.Args[i], longnames)
 			foundone := false
 		optloop: for _, o := range opts {
 				for _, n := range o.names {
-					if a == n {
-						if o.allowsArg != "" && len(os.Args) > i+1 && len(os.Args[i+1]) > 1 && os.Args[i+1][0] != '-' {
+					if aflag == n {
+						if x := strings.Index(a,"="); x > 0 {
+							// We have a --flag=foo argument
+							if o.allowsArg == "" {
+								fmt.Println("Flag",a,"doesn't want an argument!")
+								os.Exit(1)
+							}
+							failnoting("Error in flag "+a+":",
+								o.process(a[x+1 : len(a)]))
+							foundone = true
+							break optloop
+						} else if o.allowsArg != "" && len(os.Args) > i+1 && len(os.Args[i+1]) > 1 && os.Args[i+1][0] != '-' {
 							// next arg looks like a flag!
 							failnoting("Error in flag "+n+":",
 								o.process(os.Args[i+1]))
@@ -396,11 +414,6 @@ func Parse(extraopts func() []string) {
 						} else { // no (optional) argument was provided...
 							failnoting("Error in flag "+n+":", o.process(""))
 						}
-						foundone = true
-						break optloop
-					} else if o.allowsArg != "" && len(a) > len(n)+1 &&
-						a[0:len(n)] == n && a[len(n)] == '=' {
-						failnoting("Error in flag "+a+":", o.process(a[len(n)+1 : len(a)]))
 						foundone = true
 						break optloop
 					}
@@ -417,6 +430,9 @@ func Parse(extraopts func() []string) {
 }
 
 func match(x string, allflags []string) string {
+	if i := strings.Index(x, "="); i > 0 {
+		x = x[0:i]
+	}
 	for _,f := range allflags {
 		if f == x {
 			return x
