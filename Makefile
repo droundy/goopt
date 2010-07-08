@@ -3,7 +3,7 @@
 
 include $(GOROOT)/src/Make.$(GOARCH)
 
-TARG=github.com/droundy/goopt.git
+TARG=github.com/droundy/goopt
 
 GOFILES=\
         goopt.go\
