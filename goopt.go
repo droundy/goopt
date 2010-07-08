@@ -289,7 +289,7 @@ func Flag(yes []string, no []string, def bool, helpyes, helpno string) *bool {
 	if len(no) > 0 {
 		NoArg(no, helpno, n)
 	}
-	*b = default
+	*b = def
 	return b
 }
 
