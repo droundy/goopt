@@ -360,12 +360,10 @@ func Parse(extraopts func() []string) {
 			break
 		}
 		if len(a) > 1 && a[0] == '-' && a[1] != '-' {
-			//fmt.Println("looking at short option",a)
-			for _, o := range opts {
-				//fmt.Println("checking in shortnames ", o.shortnames)
-				for j, s := range a[1:len(a)] {
+			for j, s := range a[1:] {
+				foundone := false
+				for _, o := range opts {
 					for _, c := range o.shortnames {
-						//fmt.Println("comparing ",string(c)," with ",string(s))
 						if c == s {
 							switch {
 							case o.allowsArg != "" && j+1 == len(a)-1 && len(os.Args) > i+1 &&
@@ -381,11 +379,16 @@ func Parse(extraopts func() []string) {
 								failnoting("Error in flag -"+string(c)+":",
 									o.process(""))
 							}
+							foundone = true
 							break
-						}
-					}
+						} // Process if we find a match
+					} // Loop over the shortnames that this option supports
+				} // Loop over the short arguments that we know
+				if !foundone {
+					failnoting("Bad flag:", os.NewError("-" + a[j:j+1]))
+					Args.Push("-" + a[j:j+1])
 				}
-			}
+			} // Loop over the characters in this short argument
 		} else {
 			// Looking for a long flag.  Any unique prefix is accepted!
 			aflag := match(os.Args[i], longnames)
