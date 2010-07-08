@@ -11,6 +11,7 @@ import (
 	"path"
 	"tabwriter"
 	"strings"
+	"container/vector"
 )
 
 var opts = make([]opt, 0, 100)
@@ -253,11 +254,11 @@ func String(names []string, d string, help string) *string {
 //   argname string            The argument name of the strings that are appended (e.g. the val in --opt=val)
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 // Returns:
-//   []string                  This points to a string slice whose value is appended as this flag is changed
-func Strings(names []string, d string, help string) []string {
-	s := make([]string,0,100)
+//   *vector.StringVector      This points to a string vector whose value is appended as this flag is changed
+func Strings(names []string, d string, help string) *vector.StringVector {
+	s := new(vector.StringVector)
 	f := func(ss string) os.Error {
-		s = Append(s, ss)
+		s.Push(ss)
 		return nil
 	}
 	ReqArg(names, d, help, f)
