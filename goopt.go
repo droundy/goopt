@@ -250,7 +250,7 @@ func String(names []string, d string, help string) *string {
 // Create a required-argument flag that accepts string values but allows more than one to be specified
 // Parameters:
 //   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
-//   def     string            Default value for the string
+//   argname string            The argument name of the strings that are appended (e.g. the val in --opt=val)
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 // Returns:
 //   []string                  This points to a string slice whose value is appended as this flag is changed
