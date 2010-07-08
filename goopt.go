@@ -386,7 +386,7 @@ func Parse(extraopts func() []string) {
 				} // Loop over the short arguments that we know
 				if !foundone {
 					failnoting("Bad flag:", os.NewError("-" + a[j:j+1]))
-					Args.Push("-" + a[j:j+1])
+					Args.Push("-" + a[j+1:j+2])
 				}
 			} // Loop over the characters in this short argument
 		} else {
