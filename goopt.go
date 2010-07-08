@@ -352,7 +352,12 @@ func Parse(extraopts func() []string) {
 		makeManpage()
 		os.Exit(0)
 	}
+	skip := 0
 	for i, a := range os.Args {
+		if skip > 0 {
+			skip--
+			continue
+		}
 		if a == "--" {
 			for _,aa := range os.Args[i:] {
 				Args.Push(aa)
@@ -371,7 +376,7 @@ func Parse(extraopts func() []string) {
 								// next arg looks like a flag!
 								failnoting("Error in flag -"+string(c)+":",
 									         o.process(os.Args[i+1]))
-								i++ // skip next arg in looking for flags...
+								skip++ // skip next arg in looking for flags...
 							case o.needsArg:
 								fmt.Printf("Flag -%c requires argument!\n", c)
 								os.Exit(1)
@@ -385,8 +390,9 @@ func Parse(extraopts func() []string) {
 					} // Loop over the shortnames that this option supports
 				} // Loop over the short arguments that we know
 				if !foundone {
-					failnoting("Bad flag:", os.NewError("-" + a[j:j+1]))
-					Args.Push("-" + a[j+1:j+2])
+					badflag := "-" + a[j+1:j+2]
+					failnoting("Bad flag:", os.NewError(badflag))
+					Args.Push(badflag)
 				}
 			} // Loop over the characters in this short argument
 		} else {
@@ -410,7 +416,7 @@ func Parse(extraopts func() []string) {
 							// next arg looks like a flag!
 							failnoting("Error in flag "+n+":",
 								o.process(os.Args[i+1]))
-							i++ // skip next arg in looking for flags...
+							skip++ // skip next arg in looking for flags...
 						} else if o.needsArg {
 							fmt.Println("Flag",a,"requires argument!")
 							os.Exit(1)
