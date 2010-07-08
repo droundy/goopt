@@ -1,5 +1,0 @@
-#!/bin/sh
-
-set -ev
-cp -f scripts/make.header Makefile
-gotmake --without-gotgo=false --ignore-installed=false >> Makefile
