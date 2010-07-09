@@ -11,9 +11,8 @@ example/example | grep BOO
 example/example | grep 'name is anonymous'
 example/example | grep 'I am unhappy'
 
-example/example --verbose | grep 'I am verbose'
-
 example/example --undefined && exit 1
+example/example -undef && exit 1
 
 example/example --sad | grep unhappy
 example/example --happy | grep 'am happy'
@@ -26,6 +25,10 @@ example/example --speed=fast
 example/example --speed=fast | grep 'very fast'
 example/example --velocity=medium | grep 'very medium'
 example/example --velocity=mediu && exit 1
+
+example/example --list=blah | grep 'blah'
+example/example --list=hello -l world | grep 'hello world'
+example/example -ll cool beans | grep 'cool beans'
 
 example/example --help | grep name=anonymous
 example/example --help | grep ' -b BOO'

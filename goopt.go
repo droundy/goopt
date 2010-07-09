@@ -19,10 +19,10 @@ var opts = make([]opt, 0, 100)
 // Redefine this function to change the way usage is printed
 var Usage = func() string {
 	if Summary != "" {
-		return fmt.Sprintf("Usage of %s:\n\t",os.Args[0]) +
+		return fmt.Sprintf("Usage of %s:\n\t", os.Args[0]) +
 			Summary + "\n" + Help()
 	}
-	return fmt.Sprintf("Usage of %s:\n%s",os.Args[0], Help())
+	return fmt.Sprintf("Usage of %s:\n%s", os.Args[0], Help())
 }
 
 // Redefine this to change the summary of your program (used in the
@@ -50,7 +50,7 @@ var Vars = make(map[string]string)
 // rest of the text, so a var of A set to HI expanded into HAPPY will
 // become HHIPPY.
 func Expand(x string) string {
-	for k,v := range Vars {
+	for k, v := range Vars {
 		x = strings.Join(strings.Split(x, k, -1), v)
 	}
 	return x
@@ -59,24 +59,30 @@ func Expand(x string) string {
 // Override the way help is displayed (not recommended)
 var Help = func() string {
 	h0 := new(bytes.Buffer)
-	h := tabwriter.NewWriter(h0,0,8,2,' ',0)
-	if (len(opts) > 1) { fmt.Fprintln(h, "Options:") }
+	h := tabwriter.NewWriter(h0, 0, 8, 2, ' ', 0)
+	if len(opts) > 1 {
+		fmt.Fprintln(h, "Options:")
+	}
 	for _, o := range opts {
-		fmt.Fprint(h,"  ")
+		fmt.Fprint(h, "  ")
 		if len(o.shortnames) > 0 {
-			for _,sn:= range o.shortnames[0:len(o.shortnames)-1] {
+			for _, sn := range o.shortnames[0 : len(o.shortnames)-1] {
 				fmt.Fprintf(h, "-%c, ", sn)
 			}
 			fmt.Fprintf(h, "-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
+			if o.allowsArg != "" {
+				fmt.Fprintf(h, " %s", o.allowsArg)
+			}
 		}
-		fmt.Fprintf(h,"\t")
+		fmt.Fprintf(h, "\t")
 		if len(o.names) > 0 {
-			for _,n:= range o.names[0:len(o.names)-1] {
+			for _, n := range o.names[0 : len(o.names)-1] {
 				fmt.Fprintf(h, "%s, ", n)
 			}
 			fmt.Fprint(h, o.names[len(o.names)-1])
-			if o.allowsArg != "" { fmt.Fprintf(h, "=%s", o.allowsArg) }
+			if o.allowsArg != "" {
+				fmt.Fprintf(h, "=%s", o.allowsArg)
+			}
 		}
 		fmt.Fprintf(h, "\t%v\n", Expand(o.help))
 	}
@@ -88,29 +94,35 @@ var Help = func() string {
 var Synopsis = func() string {
 	h := new(bytes.Buffer)
 	for _, o := range opts {
-		fmt.Fprint(h," [")
+		fmt.Fprint(h, " [")
 		switch {
 		case len(o.shortnames) == 0:
-			for _,n:= range o.names[0:len(o.names)-1] {
+			for _, n := range o.names[0 : len(o.names)-1] {
 				fmt.Fprintf(h, "\\-\\-%s|", n[2:])
 			}
 			fmt.Fprintf(h, "\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
+			if o.allowsArg != "" {
+				fmt.Fprintf(h, " %s", o.allowsArg)
+			}
 		case len(o.names) == 0:
-			for _,c:= range o.shortnames[0:len(o.shortnames)-1] {
+			for _, c := range o.shortnames[0 : len(o.shortnames)-1] {
 				fmt.Fprintf(h, "\\-%c|", c)
 			}
 			fmt.Fprintf(h, "\\-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
+			if o.allowsArg != "" {
+				fmt.Fprintf(h, " %s", o.allowsArg)
+			}
 		default:
-			for _,c:= range o.shortnames {
+			for _, c := range o.shortnames {
 				fmt.Fprintf(h, "\\-%c|", c)
 			}
-			for _,n:= range o.names[0:len(o.names)-1] {
+			for _, n := range o.names[0 : len(o.names)-1] {
 				fmt.Fprintf(h, "\\-\\-%s|", n[2:])
 			}
 			fmt.Fprintf(h, "\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
+			if o.allowsArg != "" {
+				fmt.Fprintf(h, " %s", o.allowsArg)
+			}
 		}
 		fmt.Fprint(h, "]")
 	}
@@ -126,11 +138,11 @@ If you want paragraphs, just use two newlines in a row, like latex.`
 }
 
 type opt struct {
-	names               []string
-	shortnames, help    string
-	needsArg bool
-	allowsArg string
-	process             func(string) os.Error // returns error when it's illegal
+	names            []string
+	shortnames, help string
+	needsArg         bool
+	allowsArg        string
+	process          func(string) os.Error // returns error when it's illegal
 }
 
 func addOpt(o opt) {
@@ -163,9 +175,9 @@ func addOpt(o opt) {
 }
 
 // Execute the given closure on the name of all known arguments
-func VisitAllNames(f func (string)) {
-	for _,o := range opts {
-		for _,n := range o.names {
+func VisitAllNames(f func(string)) {
+	for _, o := range opts {
+		for _, n := range o.names {
 			f(n)
 		}
 	}
@@ -178,10 +190,11 @@ func VisitAllNames(f func (string)) {
 //   process func() os.Error   The function to call when this flag is processed with no argument
 func NoArg(names []string, help string, process func() os.Error) {
 	addOpt(opt{names, "", help, false, "", func(s string) os.Error {
-			if s != "" {
-				return os.NewError("unexpected flag: " + s)
-			}
-			return process() }})
+		if s != "" {
+			return os.NewError("unexpected flag: " + s)
+		}
+		return process()
+	}})
 }
 
 // Add a new flag that requires an argument
@@ -202,10 +215,10 @@ func ReqArg(names []string, argname, help string, process func(string) os.Error)
 //   process func(string) os.Error  The function to call when this flag is processed with an argument
 func OptArg(names []string, def, help string, process func(string) os.Error) {
 	addOpt(opt{names, "", help, false, def, func(s string) os.Error {
-			if s == "" {
-				return process(def)
-			}
-			return process(s)
+		if s == "" {
+			return process(def)
+		}
+		return process(s)
 	}})
 }
 
@@ -220,16 +233,16 @@ func Alternatives(names, vs []string, help string) *string {
 	out := new(string)
 	*out = vs[0]
 	f := func(s string) os.Error {
-		for _,v := range vs {
+		for _, v := range vs {
 			if s == v {
 				*out = v
 				return nil
 			}
 		}
-		return os.NewError("invalid flag: "+s)
+		return os.NewError("invalid flag: " + s)
 	}
-	possibilities := "["+vs[0]
-	for _,v := range vs[1:] {
+	possibilities := "[" + vs[0]
+	for _, v := range vs[1:] {
 		possibilities += "|" + v
 	}
 	possibilities += "]"
@@ -326,7 +339,7 @@ func Parse(extraopts func() []string) {
 			fmt.Println(Usage())
 			os.Exit(0)
 			return nil
-	}})
+		}})
 	// Let's now tally all the long option names, so we can use this to
 	// find "unique" options.
 	longnames := []string{"--list-options", "--create-manpage"}
@@ -335,19 +348,19 @@ func Parse(extraopts func() []string) {
 	}
 	// Now let's check if --list-options was given, and if so, list all
 	// possible options.
-	if any(func(a string) bool {return match(a, longnames)=="--list-options"},
+	if any(func(a string) bool { return match(a, longnames) == "--list-options" },
 		os.Args[1:]) {
 		if extraopts != nil {
 			for _, o := range extraopts() {
 				fmt.Println(o)
 			}
 		}
-		VisitAllNames(func (n string) { fmt.Println(n) })
+		VisitAllNames(func(n string) { fmt.Println(n) })
 		os.Exit(0)
 	}
 	// Now let's check if --create-manpage was given, and if so, create a
 	// man page.
-	if any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
+	if any(func(a string) bool { return match(a, longnames) == "--create-manpage" },
 		os.Args[0:]) {
 		makeManpage()
 		os.Exit(0)
@@ -359,7 +372,7 @@ func Parse(extraopts func() []string) {
 			continue
 		}
 		if a == "--" {
-			for _,aa := range os.Args[i:] {
+			for _, aa := range os.Args[i:] {
 				Args.Push(aa)
 			}
 			break
@@ -371,11 +384,14 @@ func Parse(extraopts func() []string) {
 					for _, c := range o.shortnames {
 						if c == s {
 							switch {
-							case o.allowsArg != "" && j+1 == len(a)-1 && len(os.Args) > i+1 &&
-									len(os.Args[i+1]) > 1 && os.Args[i+1][0] != '-':
-								// next arg looks like a flag!
+							case o.allowsArg != "" &&
+								//	j+1 == len(a)-1 &&
+								len(os.Args) > i+skip+1 &&
+								len(os.Args[i+skip+1]) > 1 &&
+								os.Args[i+skip+1][0] != '-':
+								// this last one prevents options from taking options as arguments...
 								failnoting("Error in flag -"+string(c)+":",
-									         o.process(os.Args[i+1]))
+									o.process(os.Args[i+skip+1]))
 								skip++ // skip next arg in looking for flags...
 							case o.needsArg:
 								fmt.Printf("Flag -%c requires argument!\n", c)
@@ -399,17 +415,18 @@ func Parse(extraopts func() []string) {
 			// Looking for a long flag.  Any unique prefix is accepted!
 			aflag := match(os.Args[i], longnames)
 			foundone := false
-		optloop: for _, o := range opts {
+		optloop:
+			for _, o := range opts {
 				for _, n := range o.names {
 					if aflag == n {
-						if x := strings.Index(a,"="); x > 0 {
+						if x := strings.Index(a, "="); x > 0 {
 							// We have a --flag=foo argument
 							if o.allowsArg == "" {
-								fmt.Println("Flag",a,"doesn't want an argument!")
+								fmt.Println("Flag", a, "doesn't want an argument!")
 								os.Exit(1)
 							}
 							failnoting("Error in flag "+a+":",
-								o.process(a[x+1 : len(a)]))
+								o.process(a[x+1:len(a)]))
 							foundone = true
 							break optloop
 						} else if o.allowsArg != "" && len(os.Args) > i+1 && len(os.Args[i+1]) > 1 && os.Args[i+1][0] != '-' {
@@ -418,7 +435,7 @@ func Parse(extraopts func() []string) {
 								o.process(os.Args[i+1]))
 							skip++ // skip next arg in looking for flags...
 						} else if o.needsArg {
-							fmt.Println("Flag",a,"requires argument!")
+							fmt.Println("Flag", a, "requires argument!")
 							os.Exit(1)
 						} else { // no (optional) argument was provided...
 							failnoting("Error in flag "+n+":", o.process(""))
@@ -442,13 +459,13 @@ func match(x string, allflags []string) string {
 	if i := strings.Index(x, "="); i > 0 {
 		x = x[0:i]
 	}
-	for _,f := range allflags {
+	for _, f := range allflags {
 		if f == x {
 			return x
 		}
 	}
 	out := ""
-	for _,f := range allflags {
+	for _, f := range allflags {
 		if len(f) >= len(x) && f[0:len(x)] == x {
 			if out == "" {
 				out = f
@@ -461,14 +478,16 @@ func match(x string, allflags []string) string {
 }
 
 func makeManpage() {
-	_,progname :=  path.Split(os.Args[0])
+	_, progname := path.Split(os.Args[0])
 	version := Version
-	if Suite != "" { version = Suite + " " + version }
+	if Suite != "" {
+		version = Suite + " " + version
+	}
 	fmt.Printf(".TH \"%s\" 1 \"%s\" \"%s\" \"%s\"\n", progname,
 		time.LocalTime().Format("January 2, 2006"), version, Suite)
 	fmt.Println(".SH NAME")
 	if Summary != "" {
-		fmt.Println(progname,"\\-",Summary)
+		fmt.Println(progname, "\\-", Summary)
 	} else {
 		fmt.Println(progname)
 	}
@@ -481,26 +500,32 @@ func makeManpage() {
 		fmt.Println(".TP")
 		switch {
 		case len(o.shortnames) == 0:
-			for _,n:= range o.names[0:len(o.names)-1] {
+			for _, n := range o.names[0 : len(o.names)-1] {
 				fmt.Printf("\\-\\-%s,", n[2:])
 			}
 			fmt.Printf("\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" { fmt.Printf( " %s", o.allowsArg) }
-		case len(o.names) == 0:
-			for _,c:= range o.shortnames[0:len(o.shortnames)-1] {
-				fmt.Printf( "\\-%c,", c)
+			if o.allowsArg != "" {
+				fmt.Printf(" %s", o.allowsArg)
 			}
-			fmt.Printf("\\-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != "" { fmt.Printf( " %s", o.allowsArg) }
-		default:
-			for _,c:= range o.shortnames {
+		case len(o.names) == 0:
+			for _, c := range o.shortnames[0 : len(o.shortnames)-1] {
 				fmt.Printf("\\-%c,", c)
 			}
-			for _,n:= range o.names[0:len(o.names)-1] {
+			fmt.Printf("\\-%c", o.shortnames[len(o.shortnames)-1])
+			if o.allowsArg != "" {
+				fmt.Printf(" %s", o.allowsArg)
+			}
+		default:
+			for _, c := range o.shortnames {
+				fmt.Printf("\\-%c,", c)
+			}
+			for _, n := range o.names[0 : len(o.names)-1] {
 				fmt.Printf("\\-\\-%s,", n[2:])
 			}
-			fmt.Printf( "\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" { fmt.Printf( " %s", o.allowsArg) }
+			fmt.Printf("\\-\\-%s", o.names[len(o.names)-1][2:])
+			if o.allowsArg != "" {
+				fmt.Printf(" %s", o.allowsArg)
+			}
 		}
 		fmt.Printf("\n%s\n", Expand(o.help))
 	}
@@ -512,7 +537,7 @@ func makeManpage() {
 func formatParagraphs(x string) string {
 	h := new(bytes.Buffer)
 	lines := strings.Split(x, "\n", -1)
-	for _,l := range lines {
+	for _, l := range lines {
 		if l == "" {
 			fmt.Fprintln(h, ".PP")
 		} else {
