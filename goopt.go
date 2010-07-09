@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-var opts = make([]opt, 0, 100)
+var opts = make([]opt, 0, 8)
 
 // Redefine this function to change the way usage is printed
 var Usage = func() string {
@@ -133,7 +133,7 @@ type opt struct {
 }
 
 func addOpt(o opt) {
-	newnames := make([]string, 0, 100)
+	newnames := make([]string, 0, len(o.names))
 	for _, n := range o.names {
 		switch {
 		case len(n) < 2:
@@ -311,7 +311,7 @@ func failnoting(s string, e os.Error) {
 }
 
 // This is the list of non-flag arguments after processing
-var Args = make([]string, 0, 100)
+var Args = make([]string, 0, 4)
 
 // This parses the command-line arguments.
 // Special flags are:
