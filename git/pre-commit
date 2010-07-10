@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -ev
+
+TEMPDIR=`mktemp -d -t testing-XXXXXXXXX`
+git checkout-index --prefix=$TEMPDIR/ -af
+cd $TEMPDIR
+./.test
