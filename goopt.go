@@ -450,7 +450,7 @@ func Parse(extraopts func() []string) {
 				failnoting("Bad flag:", os.NewError(a))
 			}
 			if !foundone {
-				Args.Push(a)
+				append(&Args, a)
 			}
 		}
 	}
