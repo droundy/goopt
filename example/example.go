@@ -15,9 +15,9 @@ var amHappy = goopt.Flag([]string{"-h", "--happy"},
 
 var foo = goopt.String([]string{"--name"}, "anonymous", "pick your name")
 var bar = goopt.String([]string{"-b"}, "BOO!", "pick your scary sound")
-var speed = goopt.Alternatives([]string{"--speed","--velocity"},
-	                             []string{"slow","medium","fast"},
-	                             "set the speed")
+var speed = goopt.Alternatives([]string{"--speed", "--velocity"},
+	[]string{"slow", "medium", "fast"},
+	"set the speed")
 
 var words = goopt.Strings([]string{"--word", "--saying"}, "word",
 	"specify a word to speak")
@@ -35,9 +35,9 @@ func main() {
 	}
 	fmt.Println("Your name is", *foo)
 	fmt.Println(*bar, "... Did I scare you?")
-	fmt.Println("I am going so very", *speed,"!!!")
+	fmt.Println("I am going so very", *speed, "!!!")
 	fmt.Print("Here is the saying:")
-	for _,w := range *words {
+	for _, w := range *words {
 		fmt.Print(" ", w)
 	}
 	fmt.Println()
