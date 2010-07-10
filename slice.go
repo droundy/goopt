@@ -9,13 +9,13 @@ func cat(slices ...[]string) []string {
 // cats concatenates several slices, expanding if needed.
 func cats(slices [][]string) []string {
 	lentot := 0
-	for _,sl := range slices {
+	for _, sl := range slices {
 		lentot += len(sl)
 	}
 	out := make([]string, lentot)
 	i := 0
-	for _,sl := range slices {
-		for _,v := range sl {
+	for _, sl := range slices {
+		for _, v := range sl {
 			out[i] = v
 			i++
 		}
@@ -24,8 +24,10 @@ func cats(slices [][]string) []string {
 }
 
 func any(f func(string) bool, slice []string) bool {
-	for _,v:= range slice {
-		if f(v) { return true }
+	for _, v := range slice {
+		if f(v) {
+			return true
+		}
 	}
 	return false
 }
