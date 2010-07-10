@@ -429,10 +429,8 @@ func Parse(extraopts func() []string) {
 							}
 							failnoting("Error in flag "+a+":",
 								o.process(a[x+1:len(a)]))
-							foundone = true
-							break optloop
 						} else if o.allowsArg != "" && len(os.Args) > i+1 && len(os.Args[i+1]) > 1 && os.Args[i+1][0] != '-' {
-							// next arg looks like a flag!
+							// last check sees if the next arg looks like a flag
 							failnoting("Error in flag "+n+":",
 								o.process(os.Args[i+1]))
 							skip++ // skip next arg in looking for flags...
@@ -442,6 +440,7 @@ func Parse(extraopts func() []string) {
 						} else { // no (optional) argument was provided...
 							failnoting("Error in flag "+n+":", o.process(""))
 						}
+						foundone = true
 						break optloop
 					}
 				}

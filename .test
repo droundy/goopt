@@ -2,9 +2,9 @@
 
 set -ev
 
-make install
+make clean all install
 cd example
-make
+make clean all
 cd ..
 
 example/example | grep BOO
@@ -34,10 +34,6 @@ example/example --speed=fast | grep 'very fast'
 example/example --velocity=medium | grep 'very medium'
 example/example --velocity=mediu && exit 1
 
-example/example --list=blah | grep 'blah'
-example/example --list=hello -l world | grep 'hello world'
-example/example -ll cool beans | grep 'cool beans'
-
 example/example --help | grep name=anonymous
 example/example --help | grep ' -b BOO'
 example/example --help | grep ' --unhappy, --sad'
@@ -46,5 +42,6 @@ example/example --help | grep '=.slow.medium.fast'
 # Check that Strings works as expected:
 example/example --word=hello | grep 'saying: hello'
 example/example --word=hello --saying=world | grep 'saying: hello world'
+example/example -ws hello world | grep 'saying: hello world'
 
 echo all tests passed!

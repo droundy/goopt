@@ -4,14 +4,12 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	goopt "github.com/droundy/goopt"
 )
 
 var amVerbose = goopt.Flag([]string{"--verbose"}, []string{},
 	"output verbosely", "")
-var amHappy = goopt.Flag([]string{"-h", "--happy"},
-	[]string{"-u", "--unhappy", "--sad"}, "be happy", "be unhappy")
+var amHappy = goopt.Flag([]string{"-h", "--happy"}, []string{"-u", "--unhappy", "--sad"}, "be happy", "be unhappy")
 
 var foo = goopt.String([]string{"--name"}, "anonymous", "pick your name")
 var bar = goopt.String([]string{"-b"}, "BOO!", "pick your scary sound")
@@ -19,7 +17,7 @@ var speed = goopt.Alternatives([]string{"--speed", "--velocity"},
 	[]string{"slow", "medium", "fast"},
 	"set the speed")
 
-var words = goopt.Strings([]string{"--word", "--saying"}, "word",
+var words = goopt.Strings([]string{"--word", "--saying", "-w", "-s"}, "word",
 	"specify a word to speak")
 
 func main() {
