@@ -11,18 +11,17 @@ import (
 	"path"
 	"tabwriter"
 	"strings"
-	"container/vector"
 )
 
-var opts = make([]opt, 0, 100)
+var opts = make([]opt, 0, 8)
 
 // Redefine this function to change the way usage is printed
 var Usage = func() string {
 	if Summary != "" {
-		return fmt.Sprintf("Usage of %s:\n\t", os.Args[0]) +
+		return fmt.Sprintf("Usage of %s:\n\t",os.Args[0]) +
 			Summary + "\n" + Help()
 	}
-	return fmt.Sprintf("Usage of %s:\n%s", os.Args[0], Help())
+	return fmt.Sprintf("Usage of %s:\n%s",os.Args[0], Help())
 }
 
 // Redefine this to change the summary of your program (used in the
@@ -50,7 +49,7 @@ var Vars = make(map[string]string)
 // rest of the text, so a var of A set to HI expanded into HAPPY will
 // become HHIPPY.
 func Expand(x string) string {
-	for k, v := range Vars {
+	for k,v := range Vars {
 		x = strings.Join(strings.Split(x, k, -1), v)
 	}
 	return x
@@ -59,30 +58,24 @@ func Expand(x string) string {
 // Override the way help is displayed (not recommended)
 var Help = func() string {
 	h0 := new(bytes.Buffer)
-	h := tabwriter.NewWriter(h0, 0, 8, 2, ' ', 0)
-	if len(opts) > 1 {
-		fmt.Fprintln(h, "Options:")
-	}
+	h := tabwriter.NewWriter(h0,0,8,2,' ',0)
+	if (len(opts) > 1) { fmt.Fprintln(h, "Options:") }
 	for _, o := range opts {
-		fmt.Fprint(h, "  ")
+		fmt.Fprint(h,"  ")
 		if len(o.shortnames) > 0 {
-			for _, sn := range o.shortnames[0 : len(o.shortnames)-1] {
+			for _,sn:= range o.shortnames[0:len(o.shortnames)-1] {
 				fmt.Fprintf(h, "-%c, ", sn)
 			}
 			fmt.Fprintf(h, "-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, " %s", o.allowsArg)
-			}
+			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
 		}
-		fmt.Fprintf(h, "\t")
+		fmt.Fprintf(h,"\t")
 		if len(o.names) > 0 {
-			for _, n := range o.names[0 : len(o.names)-1] {
+			for _,n:= range o.names[0:len(o.names)-1] {
 				fmt.Fprintf(h, "%s, ", n)
 			}
 			fmt.Fprint(h, o.names[len(o.names)-1])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, "=%s", o.allowsArg)
-			}
+			if o.allowsArg != "" { fmt.Fprintf(h, "=%s", o.allowsArg) }
 		}
 		fmt.Fprintf(h, "\t%v\n", Expand(o.help))
 	}
@@ -94,35 +87,29 @@ var Help = func() string {
 var Synopsis = func() string {
 	h := new(bytes.Buffer)
 	for _, o := range opts {
-		fmt.Fprint(h, " [")
+		fmt.Fprint(h," [")
 		switch {
 		case len(o.shortnames) == 0:
-			for _, n := range o.names[0 : len(o.names)-1] {
+			for _,n:= range o.names[0:len(o.names)-1] {
 				fmt.Fprintf(h, "\\-\\-%s|", n[2:])
 			}
 			fmt.Fprintf(h, "\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, " %s", o.allowsArg)
-			}
+			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
 		case len(o.names) == 0:
-			for _, c := range o.shortnames[0 : len(o.shortnames)-1] {
+			for _,c:= range o.shortnames[0:len(o.shortnames)-1] {
 				fmt.Fprintf(h, "\\-%c|", c)
 			}
 			fmt.Fprintf(h, "\\-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, " %s", o.allowsArg)
-			}
+			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
 		default:
-			for _, c := range o.shortnames {
+			for _,c:= range o.shortnames {
 				fmt.Fprintf(h, "\\-%c|", c)
 			}
-			for _, n := range o.names[0 : len(o.names)-1] {
+			for _,n:= range o.names[0:len(o.names)-1] {
 				fmt.Fprintf(h, "\\-\\-%s|", n[2:])
 			}
 			fmt.Fprintf(h, "\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, " %s", o.allowsArg)
-			}
+			if o.allowsArg != "" { fmt.Fprintf(h, " %s", o.allowsArg) }
 		}
 		fmt.Fprint(h, "]")
 	}
@@ -138,15 +125,15 @@ If you want paragraphs, just use two newlines in a row, like latex.`
 }
 
 type opt struct {
-	names            []string
-	shortnames, help string
-	needsArg         bool
-	allowsArg        string
-	process          func(string) os.Error // returns error when it's illegal
+	names               []string
+	shortnames, help    string
+	needsArg bool
+	allowsArg string
+	process             func(string) os.Error // returns error when it's illegal
 }
 
 func addOpt(o opt) {
-	newnames := new(vector.StringVector)
+	newnames := make([]string, 0, len(o.names))
 	for _, n := range o.names {
 		switch {
 		case len(n) < 2:
@@ -158,10 +145,10 @@ func addOpt(o opt) {
 		case n[1] != '-':
 			panic("Invalid long flag, doesn't start with '--':" + n)
 		default:
-			newnames.Push(n)
+			append(&newnames, n)
 		}
 	}
-	o.names = newnames.Data()
+	o.names = newnames
 	if len(opts) == cap(opts) { // reallocate
 		// Allocate double what's needed, for future growth.
 		newOpts := make([]opt, len(opts), len(opts)*2)
@@ -175,9 +162,9 @@ func addOpt(o opt) {
 }
 
 // Execute the given closure on the name of all known arguments
-func VisitAllNames(f func(string)) {
-	for _, o := range opts {
-		for _, n := range o.names {
+func VisitAllNames(f func (string)) {
+	for _,o := range opts {
+		for _,n := range o.names {
 			f(n)
 		}
 	}
@@ -190,11 +177,10 @@ func VisitAllNames(f func(string)) {
 //   process func() os.Error   The function to call when this flag is processed with no argument
 func NoArg(names []string, help string, process func() os.Error) {
 	addOpt(opt{names, "", help, false, "", func(s string) os.Error {
-		if s != "" {
-			return os.NewError("unexpected flag: " + s)
-		}
-		return process()
-	}})
+			if s != "" {
+				return os.NewError("unexpected flag: " + s)
+			}
+			return process() }})
 }
 
 // Add a new flag that requires an argument
@@ -215,10 +201,10 @@ func ReqArg(names []string, argname, help string, process func(string) os.Error)
 //   process func(string) os.Error  The function to call when this flag is processed with an argument
 func OptArg(names []string, def, help string, process func(string) os.Error) {
 	addOpt(opt{names, "", help, false, def, func(s string) os.Error {
-		if s == "" {
-			return process(def)
-		}
-		return process(s)
+			if s == "" {
+				return process(def)
+			}
+			return process(s)
 	}})
 }
 
@@ -233,16 +219,16 @@ func Alternatives(names, vs []string, help string) *string {
 	out := new(string)
 	*out = vs[0]
 	f := func(s string) os.Error {
-		for _, v := range vs {
+		for _,v := range vs {
 			if s == v {
 				*out = v
 				return nil
 			}
 		}
-		return os.NewError("invalid flag: " + s)
+		return os.NewError("invalid flag: "+s)
 	}
-	possibilities := "[" + vs[0]
-	for _, v := range vs[1:] {
+	possibilities := "["+vs[0]
+	for _,v := range vs[1:] {
 		possibilities += "|" + v
 	}
 	possibilities += "]"
@@ -274,27 +260,30 @@ func String(names []string, d string, help string) *string {
 //   argname string            The argument name of the strings that are appended (e.g. the val in --opt=val)
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 // Returns:
-//   *vector.StringVector      This points to a string vector whose value is appended as this flag is changed
-func Strings(names []string, d string, help string) *vector.StringVector {
-	s := new(vector.StringVector)
+//   *[]string                 This points to a []string whose value will contain the strings passed as flags
+func Strings(names []string, d string, help string) *[]string {
+	s := make([]string, 0, 1)
 	f := func(ss string) os.Error {
-		s.Push(ss)
+		append(&s, ss)
 		return nil
 	}
 	ReqArg(names, d, help, f)
-	return s
+	return &s
 }
 
-// Create a no argument flag that is set by either passing one of the "NO" flags or one of the "YES" flags
+// Create a no-argument flag that is set by either passing one of the
+// "NO" flags or one of the "YES" flags.  The default value is "false"
+// (or "NO").  If you want another default value, you can swap the
+// meaning of "NO" and "YES".
+//
 // Parameters:
 //   yes   []string            These flags set the boolean value to true (e.g. -i --install)
 //   no    []string            These flags set the boolean value to false (e.g. -I --no-install)
-//   def     bool              The default state of the flag if unmodified by either yes or no flags
 //   helpyes string            The help text (automatically Expand()ed) to display for the "yes" flags
 //   helpno  string            The help text (automatically Expand()ed) to display for the "no" flags
 // Returns:
 //   *bool                     This points to a bool whose value is updated as this flag is changed
-func Flag(yes []string, no []string, def bool, helpyes, helpno string) *bool {
+func Flag(yes []string, no []string, helpyes, helpno string) *bool {
 	b := new(bool)
 	y := func() os.Error {
 		*b = true
@@ -310,7 +299,6 @@ func Flag(yes []string, no []string, def bool, helpyes, helpno string) *bool {
 	if len(no) > 0 {
 		NoArg(no, helpno, n)
 	}
-	*b = def
 	return b
 }
 
@@ -323,7 +311,7 @@ func failnoting(s string, e os.Error) {
 }
 
 // This is the list of non-flag arguments after processing
-var Args = new(vector.StringVector)
+var Args = make([]string, 0, 4)
 
 // This parses the command-line arguments.
 // Special flags are:
@@ -339,7 +327,7 @@ func Parse(extraopts func() []string) {
 			fmt.Println(Usage())
 			os.Exit(0)
 			return nil
-		}})
+	}})
 	// Let's now tally all the long option names, so we can use this to
 	// find "unique" options.
 	longnames := []string{"--list-options", "--create-manpage"}
@@ -348,33 +336,31 @@ func Parse(extraopts func() []string) {
 	}
 	// Now let's check if --list-options was given, and if so, list all
 	// possible options.
-	if any(func(a string) bool { return match(a, longnames) == "--list-options" },
+	if any(func(a string) bool {return match(a, longnames)=="--list-options"},
 		os.Args[1:]) {
 		if extraopts != nil {
 			for _, o := range extraopts() {
 				fmt.Println(o)
 			}
 		}
-		VisitAllNames(func(n string) { fmt.Println(n) })
+		VisitAllNames(func (n string) { fmt.Println(n) })
 		os.Exit(0)
 	}
 	// Now let's check if --create-manpage was given, and if so, create a
 	// man page.
-	if any(func(a string) bool { return match(a, longnames) == "--create-manpage" },
+	if any(func(a string) bool {return match(a, longnames)=="--create-manpage"},
 		os.Args[0:]) {
 		makeManpage()
 		os.Exit(0)
 	}
-	skip := 0
+	skip := 1
 	for i, a := range os.Args {
 		if skip > 0 {
 			skip--
 			continue
 		}
 		if a == "--" {
-			for _, aa := range os.Args[i:] {
-				Args.Push(aa)
-			}
+			Args = cat(Args, os.Args[i:])
 			break
 		}
 		if len(a) > 1 && a[0] == '-' && a[1] != '-' {
@@ -408,15 +394,17 @@ func Parse(extraopts func() []string) {
 				if !foundone {
 					badflag := "-" + a[j+1:j+2]
 					failnoting("Bad flag:", os.NewError(badflag))
-					Args.Push(badflag)
+					append(&Args, badflag)
 				}
 			} // Loop over the characters in this short argument
-		} else {
+		} else if len(a) > 2 && a[0] == '-' && a[1] == '-' {
 			// Looking for a long flag.  Any unique prefix is accepted!
 			aflag := match(os.Args[i], longnames)
 			foundone := false
-		optloop:
-			for _, o := range opts {
+			if aflag == "" {
+				failnoting("Bad flag:", os.NewError(a))
+			}
+		optloop: for _, o := range opts {
 				for _, n := range o.names {
 					if aflag == n {
 						if x := strings.Index(a, "="); x > 0 {
@@ -440,7 +428,6 @@ func Parse(extraopts func() []string) {
 						} else { // no (optional) argument was provided...
 							failnoting("Error in flag "+n+":", o.process(""))
 						}
-						foundone = true
 						break optloop
 					}
 				}

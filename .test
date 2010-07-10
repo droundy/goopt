@@ -14,8 +14,16 @@ example/example | grep 'I am unhappy'
 example/example --undefined && exit 1
 example/example -undef && exit 1
 
+# We should fail given a nonexistent short argument
+example/example -x && exit 1
+
 example/example --sad | grep unhappy
 example/example --happy | grep 'am happy'
+# A unique prefix of a flag should work fine
+example/example --ha | grep 'am happy'
+# A non-unique prefix should exit with an error
+example/example --h && exit 1
+
 example/example -h | grep 'am happy'
 example/example -u | grep 'am unhappy'
 example/example -b boo | grep boo
@@ -34,5 +42,9 @@ example/example --help | grep name=anonymous
 example/example --help | grep ' -b BOO'
 example/example --help | grep ' --unhappy, --sad'
 example/example --help | grep '=.slow.medium.fast'
+
+# Check that Strings works as expected:
+example/example --word=hello | grep 'saying: hello'
+example/example --word=hello --saying=world | grep 'saying: hello world'
 
 echo all tests passed!
