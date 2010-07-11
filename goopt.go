@@ -11,6 +11,7 @@ import (
 	"path"
 	"tabwriter"
 	"strings"
+	"strconv"
 )
 
 var opts = make([]opt, 0, 8)
@@ -267,6 +268,25 @@ func String(names []string, d string, help string) *string {
 	return s
 }
 
+// Create a required-argument flag that accepts int values
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   def     int               Default value for the flag
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+// Returns:
+//   *string                   This points to a string whose value is updated as this flag is changed
+func Int(names []string, d int, help string) *int {
+	var err os.Error
+	i := new(int)
+	*i = d
+	f := func(istr string) os.Error {
+		*i, err = strconv.Atoi(istr)
+		return err
+	}
+	ReqArg(names, strconv.Itoa(d), help, f)
+	return i
+}
+
 // Create a required-argument flag that accepts string values but allows more than one to be specified
 // Parameters:
 //   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
@@ -386,7 +406,7 @@ func Parse(extraopts func() []string) {
 							case o.allowsArg != "" &&
 								//	j+1 == len(a)-1 &&
 								len(os.Args) > i+skip+1 &&
-								len(os.Args[i+skip+1]) > 1 &&
+								len(os.Args[i+skip+1]) >= 1 &&
 								os.Args[i+skip+1][0] != '-':
 								// this last one prevents options from taking options as arguments...
 								failnoting("Error in flag -"+string(c)+":",
@@ -429,7 +449,7 @@ func Parse(extraopts func() []string) {
 							}
 							failnoting("Error in flag "+a+":",
 								o.process(a[x+1:len(a)]))
-						} else if o.allowsArg != "" && len(os.Args) > i+1 && len(os.Args[i+1]) > 1 && os.Args[i+1][0] != '-' {
+						} else if o.allowsArg != "" && len(os.Args) > i+1 && len(os.Args[i+1]) >= 1 && os.Args[i+1][0] != '-' {
 							// last check sees if the next arg looks like a flag
 							failnoting("Error in flag "+n+":",
 								o.process(os.Args[i+1]))

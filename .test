@@ -44,4 +44,7 @@ example/example --word=hello | grep 'saying: hello'
 example/example --word=hello --saying=world | grep 'saying: hello world'
 example/example -ws hello world | grep 'saying: hello world'
 
+# Check that int works as expected
+example/example -l 6 | egrep 'man\?{6}$'
+
 echo all tests passed!
