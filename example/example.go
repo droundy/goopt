@@ -42,5 +42,10 @@ func main() {
 		fmt.Print(" ", w)
 	}
 	fmt.Println()
+	fmt.Print("Back in my day,")
+	for _, w := range goopt.Args {
+		fmt.Print(" ", w)
+	}
+	fmt.Println()
 	fmt.Printf("What's up, man%s\n", strings.Repeat("?", *width))
 }

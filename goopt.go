@@ -393,7 +393,9 @@ func Parse(extraopts func() []string) {
 			continue
 		}
 		if a == "--" {
-			Args = cat(Args, os.Args[i:])
+			for _,arg := range Args[i:] {
+				append(&Args, arg)
+			}
 			break
 		}
 		if len(a) > 1 && a[0] == '-' && a[1] != '-' {
@@ -471,6 +473,8 @@ func Parse(extraopts func() []string) {
 			if !foundone {
 				append(&Args, a)
 			}
+		} else {
+			append(&Args, a)
 		}
 	}
 }
