@@ -393,9 +393,7 @@ func Parse(extraopts func() []string) {
 			continue
 		}
 		if a == "--" {
-			for _,arg := range Args[i:] {
-				append(&Args, arg)
-			}
+			Args = cat(Args, os.Args[i+1:])
 			break
 		}
 		if len(a) > 1 && a[0] == '-' && a[1] != '-' {
@@ -429,7 +427,6 @@ func Parse(extraopts func() []string) {
 				if !foundone {
 					badflag := "-" + a[j+1:j+2]
 					failnoting("Bad flag:", os.NewError(badflag))
-					append(&Args, badflag)
 				}
 			} // Loop over the characters in this short argument
 		} else if len(a) > 2 && a[0] == '-' && a[1] == '-' {
@@ -467,11 +464,8 @@ func Parse(extraopts func() []string) {
 					}
 				}
 			}
-			if !foundone && len(a) > 2 && a[0] == '-' && a[1] == '-' {
-				failnoting("Bad flag:", os.NewError(a))
-			}
 			if !foundone {
-				append(&Args, a)
+				failnoting("Bad flag:", os.NewError(a))
 			}
 		} else {
 			append(&Args, a)
