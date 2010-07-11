@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	goopt "github.com/droundy/goopt"
 )
 
@@ -19,6 +20,8 @@ var speed = goopt.Alternatives([]string{"--speed", "--velocity"},
 
 var words = goopt.Strings([]string{"--word", "--saying", "-w", "-s"}, "word",
 	"specify a word to speak")
+
+var width = goopt.Int([]string{"-l", "--length"}, 1, "number of ?s")
 
 func main() {
 	goopt.Summary = "silly test program"
@@ -39,4 +42,10 @@ func main() {
 		fmt.Print(" ", w)
 	}
 	fmt.Println()
+	fmt.Print("Back in my day,")
+	for _, w := range goopt.Args {
+		fmt.Print(" ", w)
+	}
+	fmt.Println()
+	fmt.Printf("What's up, man%s\n", strings.Repeat("?", *width))
 }
