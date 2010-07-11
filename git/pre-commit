@@ -16,7 +16,6 @@ cd $TEMPDIR
 
 GIT_WORK_TREE=$TEMPDIR
 # First we format everything and add all our changes to the repository!
-find . -name '*.go' -exec echo gofmt -w '{}' \;
 find . -name '*.go' -exec echo gofmt -w '{}' \; -exec gofmt -w '{}' \; \
     -exec git add '{}' \;
 
