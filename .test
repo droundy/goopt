@@ -47,6 +47,8 @@ example/example -ws hello world | grep 'saying: hello world'
 # Check that Args works as expected
 example/example pluto was a planet | grep "day, pluto was a planet$"
 
+# Verify that unrecognized flag-like objects trigger failure
+example/example pluto was a --planet && exit 1
 # Check that Args works as expected with --
 example/example -- pluto was a --planet | grep "day, pluto was a --planet$"
 
