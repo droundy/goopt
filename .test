@@ -27,6 +27,9 @@ example/example --h && exit 1
 example/example -h | grep 'am happy'
 example/example -u | grep 'am unhappy'
 example/example -b boo | grep boo
+# -o requires an argument
+example/example -o && exit 1
+example/example -o "let us say lettuce" | grep "let us say lettuce"
 example/example | grep 'very slow'
 example/example --speed fast | grep 'very fast'
 example/example --speed=fast

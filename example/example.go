@@ -14,6 +14,7 @@ var amHappy = goopt.Flag([]string{"-h", "--happy"}, []string{"-u", "--unhappy", 
 
 var foo = goopt.String([]string{"--name"}, "anonymous", "pick your name")
 var bar = goopt.String([]string{"-b"}, "BOO!", "pick your scary sound")
+var baz = goopt.String([]string{"-o"}, "", "test whether a silent default works")
 var speed = goopt.Alternatives([]string{"--speed", "--velocity"},
 	[]string{"slow", "medium", "fast"},
 	"set the speed")
@@ -42,6 +43,7 @@ func main() {
 		fmt.Print(" ", w)
 	}
 	fmt.Println()
+	fmt.Println(*baz)
 	fmt.Print("Back in my day,")
 	for _, w := range goopt.Args {
 		fmt.Print(" ", w)
