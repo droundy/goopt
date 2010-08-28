@@ -70,8 +70,8 @@ var Help = func() string {
 				fmt.Fprintf(h, "-%c, ", sn)
 			}
 			fmt.Fprintf(h, "-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, " %s", o.allowsArg)
+			if o.allowsArg != nil {
+				fmt.Fprintf(h, " %s", *o.allowsArg)
 			}
 		}
 		fmt.Fprintf(h, "\t")
@@ -80,8 +80,8 @@ var Help = func() string {
 				fmt.Fprintf(h, "%s, ", n)
 			}
 			fmt.Fprint(h, o.names[len(o.names)-1])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, "=%s", o.allowsArg)
+			if o.allowsArg != nil {
+				fmt.Fprintf(h, "=%s", *o.allowsArg)
 			}
 		}
 		fmt.Fprintf(h, "\t%v\n", Expand(o.help))
@@ -101,16 +101,16 @@ var Synopsis = func() string {
 				fmt.Fprintf(h, "\\-\\-%s|", n[2:])
 			}
 			fmt.Fprintf(h, "\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, " %s", o.allowsArg)
+			if o.allowsArg != nil {
+				fmt.Fprintf(h, " %s", *o.allowsArg)
 			}
 		case len(o.names) == 0:
 			for _, c := range o.shortnames[0 : len(o.shortnames)-1] {
 				fmt.Fprintf(h, "\\-%c|", c)
 			}
 			fmt.Fprintf(h, "\\-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, " %s", o.allowsArg)
+			if o.allowsArg != nil {
+				fmt.Fprintf(h, " %s", *o.allowsArg)
 			}
 		default:
 			for _, c := range o.shortnames {
@@ -120,8 +120,8 @@ var Synopsis = func() string {
 				fmt.Fprintf(h, "\\-\\-%s|", n[2:])
 			}
 			fmt.Fprintf(h, "\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" {
-				fmt.Fprintf(h, " %s", o.allowsArg)
+			if o.allowsArg != nil {
+				fmt.Fprintf(h, " %s", *o.allowsArg)
 			}
 		}
 		fmt.Fprint(h, "]")
@@ -141,7 +141,7 @@ type opt struct {
 	names            []string
 	shortnames, help string
 	needsArg         bool
-	allowsArg        string
+	allowsArg        *string // nil means we don't allow an argument
 	process          func(string) os.Error // returns error when it's illegal
 }
 
@@ -189,7 +189,7 @@ func VisitAllNames(f func(string)) {
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 //   process func() os.Error   The function to call when this flag is processed with no argument
 func NoArg(names []string, help string, process func() os.Error) {
-	addOpt(opt{names, "", help, false, "", func(s string) os.Error {
+	addOpt(opt{names, "", help, false, nil, func(s string) os.Error {
 		if s != "" {
 			return os.NewError("unexpected flag: " + s)
 		}
@@ -204,7 +204,7 @@ func NoArg(names []string, help string, process func() os.Error) {
 //   help    string                  The help text (automatically Expand()ed) to display for this flag
 //   process func(string) os.Error   The function to call when this flag is processed
 func ReqArg(names []string, argname, help string, process func(string) os.Error) {
-	addOpt(opt{names, "", help, true, argname, process})
+	addOpt(opt{names, "", help, true, &argname, process})
 }
 
 // Add a new flag that may optionally have an argument
@@ -214,7 +214,7 @@ func ReqArg(names []string, argname, help string, process func(string) os.Error)
 //   help    string                 The help text (automatically Expand()ed) to display for this flag
 //   process func(string) os.Error  The function to call when this flag is processed with an argument
 func OptArg(names []string, def, help string, process func(string) os.Error) {
-	addOpt(opt{names, "", help, false, def, func(s string) os.Error {
+	addOpt(opt{names, "", help, false, &def, func(s string) os.Error {
 		if s == "" {
 			return process(def)
 		}
@@ -355,7 +355,7 @@ var Args = make([]string, 0, 4)
 //   extraopts func() []string     This function is called by --list-options and returns extra options to display
 func Parse(extraopts func() []string) {
 	// First we'll add the "--help" option.
-	addOpt(opt{[]string{"--help"}, "", "show usage message", false, "",
+	addOpt(opt{[]string{"--help"}, "", "show usage message", false, nil,
 		func(string) os.Error {
 			fmt.Println(Usage())
 			os.Exit(0)
@@ -403,7 +403,7 @@ func Parse(extraopts func() []string) {
 					for _, c := range o.shortnames {
 						if c == s {
 							switch {
-							case o.allowsArg != "" &&
+							case o.allowsArg != nil &&
 								//	j+1 == len(a)-1 &&
 								len(os.Args) > i+skip+1 &&
 								len(os.Args[i+skip+1]) >= 1 &&
@@ -442,13 +442,13 @@ func Parse(extraopts func() []string) {
 					if aflag == n {
 						if x := strings.Index(a, "="); x > 0 {
 							// We have a --flag=foo argument
-							if o.allowsArg == "" {
+							if o.allowsArg == nil {
 								fmt.Println("Flag", a, "doesn't want an argument!")
 								os.Exit(1)
 							}
 							failnoting("Error in flag "+a+":",
 								o.process(a[x+1:len(a)]))
-						} else if o.allowsArg != "" && len(os.Args) > i+1 && len(os.Args[i+1]) >= 1 && os.Args[i+1][0] != '-' {
+						} else if o.allowsArg != nil && len(os.Args) > i+1 && len(os.Args[i+1]) >= 1 && os.Args[i+1][0] != '-' {
 							// last check sees if the next arg looks like a flag
 							failnoting("Error in flag "+n+":",
 								o.process(os.Args[i+1]))
@@ -522,16 +522,16 @@ func makeManpage() {
 				fmt.Printf("\\-\\-%s,", n[2:])
 			}
 			fmt.Printf("\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" {
-				fmt.Printf(" %s", o.allowsArg)
+			if o.allowsArg != nil {
+				fmt.Printf(" %s", *o.allowsArg)
 			}
 		case len(o.names) == 0:
 			for _, c := range o.shortnames[0 : len(o.shortnames)-1] {
 				fmt.Printf("\\-%c,", c)
 			}
 			fmt.Printf("\\-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != "" {
-				fmt.Printf(" %s", o.allowsArg)
+			if o.allowsArg != nil {
+				fmt.Printf(" %s", *o.allowsArg)
 			}
 		default:
 			for _, c := range o.shortnames {
@@ -541,8 +541,8 @@ func makeManpage() {
 				fmt.Printf("\\-\\-%s,", n[2:])
 			}
 			fmt.Printf("\\-\\-%s", o.names[len(o.names)-1][2:])
-			if o.allowsArg != "" {
-				fmt.Printf(" %s", o.allowsArg)
+			if o.allowsArg != nil {
+				fmt.Printf(" %s", *o.allowsArg)
 			}
 		}
 		fmt.Printf("\n%s\n", Expand(o.help))
