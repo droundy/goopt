@@ -274,7 +274,7 @@ func String(names []string, d string, help string) *string {
 //   def     int               Default value for the flag
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 // Returns:
-//   *string                   This points to a string whose value is updated as this flag is changed
+//   *int                      This points to an int whose value is updated as this flag is changed
 func Int(names []string, d int, help string) *int {
 	var err os.Error
 	i := new(int)
