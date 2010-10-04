@@ -15,7 +15,7 @@ useful for someone trying to see how the package works.  It comes with
 a makefile demonstrating how to do some nice tricks, such as enabling
 bash completion on your flags, and generating man pages and html
 versions of the man page (see
-[the man page for the example program](example/goopt-example.html)).
+[the man page for the example program](http://github.com/droundy/goopt/blob/master/example/goopt-example.html)).
 
 Test suite
 ----------
