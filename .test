@@ -3,6 +3,25 @@
 set -ev
 
 make clean all install
+
+cd example
+make clean
+make
+
+# Verify that the web page seems to be there:
+grep quiet goopt-example.html
+
+./goopt-example --help | grep 'demonstration program'
+./goopt-example --help | grep 'output verbosely'
+
+./goopt-example -n 0 | grep Greet && exit 1
+./goopt-example | grep Greet
+./goopt-example --child Paul --child David --child Laura | grep Paul
+./goopt-example --child Paul --child David --child Laura | grep David
+./goopt-example --child Paul --child David --child Laura | grep Laura
+
+cd ..
+
 cd test-program
 make clean all
 cd ..

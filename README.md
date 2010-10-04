@@ -7,13 +7,23 @@ compatible with the
 [getopt_long](http://www.gnu.org/s/libc/manual/html_node/Argument-Syntax.html#Argument-Syntax)
 syntax, which is an extension of the syntax recommended by POSIX.
 
-Alas, goopt is rather short on documentation.
+Example program
+---------------
+
+The example program named `example/example.go`, is meant to be more
+useful for someone trying to see how the package works.  It comes with
+a makefile demonstrating how to do some nice tricks, such as enabling
+bash completion on your flags, and generating man pages and html
+versions of the man page (see
+[the man page for the example program](example/goopt-example.html)).
 
 Test suite
 ----------
 
 The test suite is the file `.test`, which compiles and verifies the
-output of the program in the `test-program` directory.
+output of the program in the `test-program` directory, as well as the
+`example` program.  You can configure git to run the test suite
+automatically by running the `setup-git.sh` script.
 
 Documentation
 -------------
