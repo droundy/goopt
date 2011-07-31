@@ -51,7 +51,7 @@ var Vars = make(map[string]string)
 // become HHIPPY.
 func Expand(x string) string {
 	for k, v := range Vars {
-		x = strings.Join(strings.Split(x, k, -1), v)
+		x = strings.Join(strings.Split(x, k), v)
 	}
 	return x
 }
@@ -554,7 +554,7 @@ func makeManpage() {
 
 func formatParagraphs(x string) string {
 	h := new(bytes.Buffer)
-	lines := strings.Split(x, "\n", -1)
+	lines := strings.Split(x, "\n")
 	for _, l := range lines {
 		if l == "" {
 			fmt.Fprintln(h, ".PP")
