@@ -4,14 +4,15 @@ package goopt
 // basically the same way, but to parse flags like getopt does.
 
 import (
-	"os"
-	"fmt"
-	"time"
 	"bytes"
+	"errors"
+	"fmt"
+	"os"
 	"path"
-	"tabwriter"
-	"strings"
 	"strconv"
+	"strings"
+	"text/tabwriter"
+	"time"
 )
 
 var opts = make([]opt, 0, 8)
@@ -141,8 +142,8 @@ type opt struct {
 	names            []string
 	shortnames, help string
 	needsArg         bool
-	allowsArg        *string               // nil means we don't allow an argument
-	process          func(string) os.Error // returns error when it's illegal
+	allowsArg        *string            // nil means we don't allow an argument
+	process          func(string) error // returns error when it's illegal
 }
 
 func addOpt(o opt) {
@@ -188,10 +189,10 @@ func VisitAllNames(f func(string)) {
 //   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 //   process func() os.Error   The function to call when this flag is processed with no argument
-func NoArg(names []string, help string, process func() os.Error) {
-	addOpt(opt{names, "", help, false, nil, func(s string) os.Error {
+func NoArg(names []string, help string, process func() error) {
+	addOpt(opt{names, "", help, false, nil, func(s string) error {
 		if s != "" {
-			return os.NewError("unexpected flag: " + s)
+			return errors.New("unexpected flag: " + s)
 		}
 		return process()
 	}})
@@ -203,7 +204,7 @@ func NoArg(names []string, help string, process func() os.Error) {
 //   argname string                  The name of the argument in help, e.g. the "value" part of "--flag=value"
 //   help    string                  The help text (automatically Expand()ed) to display for this flag
 //   process func(string) os.Error   The function to call when this flag is processed
-func ReqArg(names []string, argname, help string, process func(string) os.Error) {
+func ReqArg(names []string, argname, help string, process func(string) error) {
 	addOpt(opt{names, "", help, true, &argname, process})
 }
 
@@ -213,8 +214,8 @@ func ReqArg(names []string, argname, help string, process func(string) os.Error)
 //   def     string                 The default of the argument in help, e.g. the "value" part of "--flag=value"
 //   help    string                 The help text (automatically Expand()ed) to display for this flag
 //   process func(string) os.Error  The function to call when this flag is processed with an argument
-func OptArg(names []string, def, help string, process func(string) os.Error) {
-	addOpt(opt{names, "", help, false, &def, func(s string) os.Error {
+func OptArg(names []string, def, help string, process func(string) error) {
+	addOpt(opt{names, "", help, false, &def, func(s string) error {
 		if s == "" {
 			return process(def)
 		}
@@ -232,14 +233,14 @@ func OptArg(names []string, def, help string, process func(string) os.Error) {
 func Alternatives(names, vs []string, help string) *string {
 	out := new(string)
 	*out = vs[0]
-	f := func(s string) os.Error {
+	f := func(s string) error {
 		for _, v := range vs {
 			if s == v {
 				*out = v
 				return nil
 			}
 		}
-		return os.NewError("invalid flag: " + s)
+		return errors.New("invalid flag: " + s)
 	}
 	possibilities := "[" + vs[0]
 	for _, v := range vs[1:] {
@@ -260,7 +261,7 @@ func Alternatives(names, vs []string, help string) *string {
 func String(names []string, d string, help string) *string {
 	s := new(string)
 	*s = d
-	f := func(ss string) os.Error {
+	f := func(ss string) error {
 		*s = ss
 		return nil
 	}
@@ -276,10 +277,10 @@ func String(names []string, d string, help string) *string {
 // Returns:
 //   *int                      This points to an int whose value is updated as this flag is changed
 func Int(names []string, d int, help string) *int {
-	var err os.Error
+	var err error
 	i := new(int)
 	*i = d
-	f := func(istr string) os.Error {
+	f := func(istr string) error {
 		*i, err = strconv.Atoi(istr)
 		return err
 	}
@@ -296,7 +297,7 @@ func Int(names []string, d int, help string) *int {
 //   *[]string                 This points to a []string whose value will contain the strings passed as flags
 func Strings(names []string, d string, help string) *[]string {
 	s := make([]string, 0, 1)
-	f := func(ss string) os.Error {
+	f := func(ss string) error {
 		append(&s, ss)
 		return nil
 	}
@@ -318,11 +319,11 @@ func Strings(names []string, d string, help string) *[]string {
 //   *bool                     This points to a bool whose value is updated as this flag is changed
 func Flag(yes []string, no []string, helpyes, helpno string) *bool {
 	b := new(bool)
-	y := func() os.Error {
+	y := func() error {
 		*b = true
 		return nil
 	}
-	n := func() os.Error {
+	n := func() error {
 		*b = false
 		return nil
 	}
@@ -335,10 +336,10 @@ func Flag(yes []string, no []string, helpyes, helpno string) *bool {
 	return b
 }
 
-func failnoting(s string, e os.Error) {
+func failnoting(s string, e error) {
 	if e != nil {
 		fmt.Println(Usage())
-		fmt.Println("\n"+s, e.String())
+		fmt.Println("\n"+s, e.Error())
 		os.Exit(1)
 	}
 }
@@ -356,7 +357,7 @@ var Args = make([]string, 0, 4)
 func Parse(extraopts func() []string) {
 	// First we'll add the "--help" option.
 	addOpt(opt{[]string{"--help"}, "", "show usage message", false, nil,
-		func(string) os.Error {
+		func(string) error {
 			fmt.Println(Usage())
 			os.Exit(0)
 			return nil
@@ -426,7 +427,7 @@ func Parse(extraopts func() []string) {
 				} // Loop over the short arguments that we know
 				if !foundone {
 					badflag := "-" + a[j+1:j+2]
-					failnoting("Bad flag:", os.NewError(badflag))
+					failnoting("Bad flag:", errors.New(badflag))
 				}
 			} // Loop over the characters in this short argument
 		} else if len(a) > 2 && a[0] == '-' && a[1] == '-' {
@@ -434,7 +435,7 @@ func Parse(extraopts func() []string) {
 			aflag := match(os.Args[i], longnames)
 			foundone := false
 			if aflag == "" {
-				failnoting("Bad flag:", os.NewError(a))
+				failnoting("Bad flag:", errors.New(a))
 			}
 		optloop:
 			for _, o := range opts {
@@ -465,7 +466,7 @@ func Parse(extraopts func() []string) {
 				}
 			}
 			if !foundone {
-				failnoting("Bad flag:", os.NewError(a))
+				failnoting("Bad flag:", errors.New(a))
 			}
 		} else {
 			append(&Args, a)
