@@ -503,7 +503,7 @@ func makeManpage() {
 		version = Suite + " " + version
 	}
 	fmt.Printf(".TH \"%s\" 1 \"%s\" \"%s\" \"%s\"\n", progname,
-		time.LocalTime().Format("January 2, 2006"), version, Suite)
+		time.Now().Format("January 2, 2006"), version, Suite)
 	fmt.Println(".SH NAME")
 	if Summary != "" {
 		fmt.Println(progname, "\\-", Summary)
