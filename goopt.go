@@ -42,6 +42,10 @@ var Version = ""
 // application name) (used in the default manpage())
 var Suite = ""
 
+// Redefine this to force flags to come before all options or be
+// treated as if they were options
+var RequireOrder = false
+
 // Variables for expansion using Expand(), which is automatically
 // called on help text for flags
 var Vars = make(map[string]string)
@@ -469,6 +473,10 @@ func Parse(extraopts func() []string) {
 				failnoting("Bad flag:", errors.New(a))
 			}
 		} else {
+			if RequireOrder {
+				Args = cat(Args, os.Args[i:])
+				break
+			}
 			append(&Args, a)
 		}
 	}
