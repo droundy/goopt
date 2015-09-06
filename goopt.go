@@ -356,7 +356,7 @@ var Args = make([]string, 0, 4)
 //   extraopts func() []string     This function is called by --list-options and returns extra options to display
 func Parse(extraopts func() []string) {
 	// First we'll add the "--help" option.
-	addOpt(opt{[]string{"--help"}, "", "show usage message", false, nil,
+	addOpt(opt{[]string{"--help", "-h"}, "", "Show usage message", false, nil,
 		func(string) error {
 			fmt.Println(Usage())
 			os.Exit(0)
