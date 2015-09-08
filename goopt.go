@@ -19,11 +19,12 @@ var opts = make([]opt, 0, 8)
 
 // Redefine this function to change the way usage is printed
 var Usage = func() string {
+	programName := os.Args[0][strings.LastIndex(os.Args[0], "/")+1:]
 	if Summary != "" {
-		return fmt.Sprintf("Usage of %s:\n\t", os.Args[0]) +
+		return fmt.Sprintf("Usage of %s:\n\t", programName) +
 			Summary + "\n" + Help()
 	}
-	return fmt.Sprintf("Usage of %s:\n%s", os.Args[0], Help())
+	return fmt.Sprintf("Usage of %s:\n%s", programName, Help())
 }
 
 // Redefine this to change the summary of your program (used in the
@@ -226,7 +227,7 @@ func OptArg(names []string, def, help string, process func(string) error) {
 // Create a required-argument flag that only accepts the given set of values
 // Parameters:
 //   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
-//   vals  []string            These are the allowable values for the argument
+//   vs    []string            These are the allowable values for the argument
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 // Returns:
 //   *string                   This points to a string whose value is updated as this flag is changed
@@ -254,54 +255,78 @@ func Alternatives(names, vs []string, help string) *string {
 // Create a required-argument flag that accepts string values
 // Parameters:
 //   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
-//   def     string            Default value for the string
+//   def     string            Default value for the string and label in Help()
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 // Returns:
 //   *string                   This points to a string whose value is updated as this flag is changed
-func String(names []string, d string, help string) *string {
+func String(names []string, def string, help string) *string {
+	return StringWithLabel(names, def, def, help)
+}
+
+// Create a required-argument flag that accepts string values and has a Help() label
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   def     string            Default value for the string
+//   label   string            Label for display in Help()
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+// Returns:
+//   *string                   This points to a string whose value is updated as this flag is changed
+func StringWithLabel(names []string, def string, label string, help string) *string {
 	s := new(string)
-	*s = d
+	*s = def
 	f := func(ss string) error {
 		*s = ss
 		return nil
 	}
-	ReqArg(names, d, help, f)
+	ReqArg(names, label, help, f)
 	return s
 }
 
 // Create a required-argument flag that accepts int values
 // Parameters:
 //   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
-//   def     int               Default value for the flag
+//   def     int               Default value for the flag and label in Help()
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 // Returns:
 //   *int                      This points to an int whose value is updated as this flag is changed
-func Int(names []string, d int, help string) *int {
+func Int(names []string, def int, help string) *int {
+	return IntWithLabel(names, def, strconv.Itoa(def), help)
+}
+
+// Create a required-argument flag that accepts int values and has a Help() label
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   def     int               Default value for the flag
+//   label   string            Label for display in Help()
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+// Returns:
+//   *int                      This points to an int whose value is updated as this flag is changed
+func IntWithLabel(names []string, def int, label string, help string) *int {
 	var err error
 	i := new(int)
-	*i = d
+	*i = def
 	f := func(istr string) error {
 		*i, err = strconv.Atoi(istr)
 		return err
 	}
-	ReqArg(names, strconv.Itoa(d), help, f)
+	ReqArg(names, label, help, f)
 	return i
 }
 
 // Create a required-argument flag that accepts string values but allows more than one to be specified
 // Parameters:
 //   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
-//   argname string            The argument name of the strings that are appended (e.g. the val in --opt=val)
+//   def     string            The argument name of the strings that are appended (e.g. the val in --opt=val)
 //   help    string            The help text (automatically Expand()ed) to display for this flag
 // Returns:
 //   *[]string                 This points to a []string whose value will contain the strings passed as flags
-func Strings(names []string, d string, help string) *[]string {
+func Strings(names []string, def string, help string) *[]string {
 	s := make([]string, 0, 1)
 	f := func(ss string) error {
 		append(&s, ss)
 		return nil
 	}
-	ReqArg(names, d, help, f)
+	ReqArg(names, def, help, f)
 	return &s
 }
 
