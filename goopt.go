@@ -232,6 +232,22 @@ func OptArg(names []string, def, help string, process func(string) error) {
 // Returns:
 //   *string                   This points to a string whose value is updated as this flag is changed
 func Alternatives(names, vs []string, help string) *string {
+	possibilities := "[" + vs[0]
+	for _, v := range vs[1:] {
+		possibilities += "|" + v
+	}
+	return AlternativesWithLabel(names, vs, possibilities, help)
+}
+
+// Create a required-argument flag that only accepts the given set of valuesand has a Help() label
+// Parameters:
+//   names []string            These are the names that are accepted on the command-line for this flag, e.g. -v --verbose
+//   vs    []string            These are the allowable values for the argument
+//   label   string            Label for display in Help()
+//   help    string            The help text (automatically Expand()ed) to display for this flag
+// Returns:
+//   *string                   This points to a string whose value is updated as this flag is changed
+func AlternativesWithLabel(names, vs []string, label string, help string) *string {
 	out := new(string)
 	*out = vs[0]
 	f := func(s string) error {
@@ -243,12 +259,7 @@ func Alternatives(names, vs []string, help string) *string {
 		}
 		return errors.New("invalid flag: " + s)
 	}
-	possibilities := "[" + vs[0]
-	for _, v := range vs[1:] {
-		possibilities += "|" + v
-	}
-	possibilities += "]"
-	ReqArg(names, possibilities, help, f)
+	ReqArg(names, label, help, f)
 	return out
 }
 
@@ -499,7 +510,7 @@ func Parse(extraopts func() []string) bool {
 			append(&Args, a)
 		}
 	}
-	
+
 	return earlyEnd
 }
 
