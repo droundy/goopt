@@ -240,6 +240,7 @@ func Alternatives(names, vs []string, help string) *string {
 	for _, v := range vs[1:] {
 		possibilities += "|" + v
 	}
+	possibilities += "]"
 	return AlternativesWithLabel(names, vs, possibilities, help)
 }
 
@@ -261,7 +262,7 @@ func AlternativesWithLabel(names, vs []string, label string, help string) *strin
 				return nil
 			}
 		}
-		return errors.New("invalid flag: " + s)
+		return errors.New("invalid value: " + s)
 	}
 	ReqArg(names, label, help, f)
 	return out
