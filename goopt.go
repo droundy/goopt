@@ -20,16 +20,24 @@ var opts = make([]opt, 0, 8)
 // Redefine this function to change the way usage is printed
 var Usage = func() string {
 	programName := os.Args[0][strings.LastIndex(os.Args[0], "/")+1:]
+	usage := fmt.Sprintf("Usage of %s:\n", programName)
 	if Summary != "" {
-		return fmt.Sprintf("Usage of %s:\n\t", programName) +
-			Summary + "\n" + Help()
+		usage += fmt.Sprintf("\t%s", Summary)
 	}
-	return fmt.Sprintf("Usage of %s:\n%s", programName, Help())
+	usage += fmt.Sprintf("\n%s", Help())
+	if ExtraUsage != "" {
+		usage += fmt.Sprintf("%s\n", ExtraUsage)
+	}
+	return usage
 }
 
 // Redefine this to change the summary of your program (used in the
 // default Usage() and man page)
 var Summary = ""
+
+// Redefine this to change the additional usage of your program (used in the
+// default Usage() and man page)
+var ExtraUsage = ""
 
 // Redefine this to change the author of your program (used in the
 // default man page)
@@ -554,10 +562,9 @@ func makeManpage() {
 	fmt.Printf(".TH \"%s\" 1 \"%s\" \"%s\" \"%s\"\n", progname,
 		time.Now().Format("January 2, 2006"), version, Suite)
 	fmt.Println(".SH NAME")
+	fmt.Println(progname)
 	if Summary != "" {
-		fmt.Println(progname, "\\-", Summary)
-	} else {
-		fmt.Println(progname)
+		fmt.Println("\\-", Summary)
 	}
 	fmt.Println(".SH SYNOPSIS")
 	fmt.Println(progname, Synopsis())
@@ -596,6 +603,9 @@ func makeManpage() {
 			}
 		}
 		fmt.Printf("\n%s\n", Expand(o.help))
+	}
+	if ExtraUsage != "" {
+		fmt.Println("\\-", ExtraUsage)
 	}
 	if Author != "" {
 		fmt.Printf(".SH AUTHOR\n%s\n", Author)
