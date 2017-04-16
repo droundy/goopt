@@ -411,6 +411,12 @@ func Parse(extraopts func() []string) bool {
 			os.Exit(0)
 			return nil
 		}})
+	addOpt(opt{[]string{"--version", "-v"}, "", "Show version", false, nil,
+		func(string) error {
+			fmt.Println(Version)
+			os.Exit(0)
+			return nil
+		}})
 	// Let's now tally all the long option names, so we can use this to
 	// find "unique" options.
 	longnames := []string{"--list-options", "--create-manpage"}
