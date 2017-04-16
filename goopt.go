@@ -88,7 +88,7 @@ var Help = func() string {
 				fmt.Fprintf(h, " %s", *o.allowsArg)
 			}
 		}
-		fmt.Fprintf(h, "\t")
+		fmt.Fprint(h, "\t")
 		if len(o.names) > 0 {
 			for _, n := range o.names[0 : len(o.names)-1] {
 				fmt.Fprintf(h, "%s, ", n)
