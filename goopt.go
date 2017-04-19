@@ -411,7 +411,7 @@ func Parse(extraopts func() []string) bool {
 			os.Exit(0)
 			return nil
 		}})
-	addOpt(opt{[]string{"--version", "-v"}, "", "Show version", false, nil,
+	addOpt(opt{[]string{"--version"}, "", "Show version", false, nil,
 		func(string) error {
 			fmt.Println(Version)
 			os.Exit(0)
