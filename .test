@@ -2,11 +2,11 @@
 
 set -ev
 
-make clean all install
+trap 'echo; echo "ERROR at line $LINENO" >&2' ERR
 
 cd example
-make clean
-make
+go build
+ln -nfs example goopt-example
 
 # Verify that the web page seems to be there:
 grep quiet goopt-example.html
@@ -23,7 +23,7 @@ grep quiet goopt-example.html
 cd ..
 
 cd test-program
-make clean all
+go build
 cd ..
 
 test-program/test-program | grep BOO
@@ -43,7 +43,6 @@ test-program/test-program --ha | grep 'am happy'
 # A non-unique prefix should exit with an error
 test-program/test-program --h && exit 1
 
-test-program/test-program -h | grep 'am happy'
 test-program/test-program -u | grep 'am unhappy'
 test-program/test-program -b boo | grep boo
 # -o requires an argument

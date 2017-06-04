@@ -1,11 +1,9 @@
-include $(GOROOT)/src/Make.inc
-
-TARG=goopt-example
-GOFILES=example.go
-
 everything: goopt-example.html goopt-example
 
-include $(GOROOT)/src/Make.cmd
+goopt-example: example
+
+example:
+	go build example.go
 
 # The following install works for Debian (and probably other linux
 # distributions), but you probably want to be more sophisticated for
