@@ -84,12 +84,14 @@ var Help = func() string {
 				fmt.Fprintf(h, "-%c, ", sn)
 			}
 			fmt.Fprintf(h, "-%c", o.shortnames[len(o.shortnames)-1])
-			if o.allowsArg != nil {
+			if o.allowsArg != nil && len(o.names) == 0 {
 				fmt.Fprintf(h, " %s", *o.allowsArg)
 			}
 		}
-		fmt.Fprint(h, "\t")
 		if len(o.names) > 0 {
+			if len(o.shortnames) > 0 {
+				fmt.Fprint(h, ", ")
+			}
 			for _, n := range o.names[0 : len(o.names)-1] {
 				fmt.Fprintf(h, "%s, ", n)
 			}
