@@ -467,7 +467,8 @@ func Parse(extraopts func() []string) bool {
 								//	j+1 == len(a)-1 &&
 								len(os.Args) > i+skip+1 &&
 								len(os.Args[i+skip+1]) >= 1 &&
-								os.Args[i+skip+1][0] != '-':
+								(os.Args[i+skip+1] == "-" ||
+									os.Args[i+skip+1][0] != '-'):
 								// this last one prevents options from taking options as arguments...
 								failnoting("Error in flag -"+string(c)+":",
 									o.process(os.Args[i+skip+1]))
@@ -508,7 +509,7 @@ func Parse(extraopts func() []string) bool {
 							}
 							failnoting("Error in flag "+a+":",
 								o.process(a[x+1:len(a)]))
-						} else if o.allowsArg != nil && len(os.Args) > i+1 && len(os.Args[i+1]) >= 1 && os.Args[i+1][0] != '-' {
+						} else if o.allowsArg != nil && len(os.Args) > i+1 && len(os.Args[i+1]) >= 1 && (os.Args[i+1] == "-" || os.Args[i+1][0] != '-') {
 							// last check sees if the next arg looks like a flag
 							failnoting("Error in flag "+n+":",
 								o.process(os.Args[i+1]))
