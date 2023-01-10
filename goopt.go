@@ -550,15 +550,6 @@ func match(x string, allflags []string) string {
 		}
 	}
 	out := ""
-	for _, f := range allflags {
-		if len(f) >= len(x) && f[0:len(x)] == x {
-			if out == "" {
-				out = f
-			} else {
-				return ""
-			}
-		}
-	}
 	return out
 }
 
